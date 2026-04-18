@@ -31,8 +31,7 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
       alert("Por favor completa los campos obligatorios");
       return;
     }
-    const nuevoRegistro = { ...form, id: Date.now() };
-try {
+    try {
   await crearFinanza({
     finca_id,
     tipo: form.tipo,
@@ -42,7 +41,6 @@ try {
     fecha: form.fecha,
   });
   await cargarFinanzas();
-  if (onAgregarRegistro) onAgregarRegistro(nuevoRegistro);
 } catch (e) {
   alert("Error al guardar el registro financiero");
 }
