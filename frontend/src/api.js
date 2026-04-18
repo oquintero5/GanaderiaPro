@@ -85,3 +85,22 @@ export const crearFinanza = async (datos) => {
   });
   return res.json();
 };
+// Actualizar Animal
+export const actualizarAnimal = async (animal_id, datos) => {
+  const res = await fetch(`${API_URL}/animales/${animal_id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos),
+  });
+  return res.json();
+};
+
+// Actualizar Historial
+export const actualizarHistorial = async (registro_id, datos) => {
+  const res = await fetch(`${API_URL}/historial/${registro_id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos),
+  });
+  return res.json();
+};

@@ -102,6 +102,27 @@ def eliminar_animal(animal_id: int, db: Session = Depends(get_db)):
     db.delete(animal)
     db.commit()
     return {"mensaje": "Animal eliminado exitosamente"}
+@router.put("/animales/{animal_id}")
+def actualizar_animal(animal_id: int, datos: AnimalCreate, db: Session = Depends(get_db)):
+    animal = db.query(models.Animal).filter(models.Animal.id == animal_id).first()
+    if not animal:
+        raise HTTPException(status_code=404, detail="Animal no encontrado")
+    for key, value in datos.dict().items():
+        setattr(animal, key, value)
+    db.commit()
+    db.refresh(animal)
+    return {"mensaje": "Animal actualizado exitosamente"}
+
+@router.put("/historial/{registro_id}")
+def actualizar_historial(registro_id: int, datos: HistorialSaludCreate, db: Session = Depends(get_db)):
+    registro = db.query(models.HistorialSalud).filter(models.HistorialSalud.id == registro_id).first()
+    if not registro:
+        raise HTTPException(status_code=404, detail="Registro no encontrado")
+    for key, value in datos.dict().items():
+        setattr(registro, key, value)
+    db.commit()
+    db.refresh(registro)
+    return {"mensaje": "Registro actualizado exitosamente"}
 
 # Rutas Historial Salud
 @router.get("/historial/{animal_id}")
