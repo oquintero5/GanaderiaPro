@@ -1,29 +1,20 @@
 import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
+import Insumos from "./Insumos";
+import Finanzas from "./Finanzas";
 
 function Dashboard({ finca }) {
   const [animales, setAnimales] = useState([]);
+  const [registrosFinanzas, setRegistrosFinanzas] = useState([]);
   const [mostrarFormAnimal, setMostrarFormAnimal] = useState(false);
   const [vista, setVista] = useState("inicio");
   const [animalSeleccionado, setAnimalSeleccionado] = useState(null);
   const [vistaAnimal, setVistaAnimal] = useState("info");
-  const [mostrarQR, setMostrarQR] = useState(false);
   const [nuevoRegistroSalud, setNuevoRegistroSalud] = useState({
-    fecha: "",
-    tipo: "",
-    producto: "",
-    dosis: "",
-    observaciones: "",
+    fecha: "", tipo: "", producto: "", dosis: "", observaciones: "",
   });
-
   const [form, setForm] = useState({
-    nombre: "",
-    chapeta: "",
-    edad: "",
-    peso: "",
-    sexo: "",
-    raza: "",
-    crias: "",
+    nombre: "", chapeta: "", edad: "", peso: "", sexo: "", raza: "", crias: "",
   });
 
   const handleChange = (e) => {
@@ -48,10 +39,7 @@ function Dashboard({ finca }) {
     }
     const animalesActualizados = animales.map((a) => {
       if (a.id === animalSeleccionado.id) {
-        return {
-          ...a,
-          historialSalud: [...a.historialSalud, { ...nuevoRegistroSalud, id: Date.now() }],
-        };
+        return { ...a, historialSalud: [...a.historialSalud, { ...nuevoRegistroSalud, id: Date.now() }] };
       }
       return a;
     });
@@ -59,6 +47,19 @@ function Dashboard({ finca }) {
     setAnimalSeleccionado(animalesActualizados.find((a) => a.id === animalSeleccionado.id));
     setNuevoRegistroSalud({ fecha: "", tipo: "", producto: "", dosis: "", observaciones: "" });
     alert("¡Registro de salud agregado!");
+  };
+
+  // Cuando se agrega un insumo, se registra automáticamente en finanzas
+  const agregarInsumoConFinanzas = (insumo) => {
+    const gastoFinanzas = {
+      id: Date.now(),
+      tipo: "Gasto",
+      categoria: "Compra de Insumos",
+      descripcion: `${insumo.nombre} - ${insumo.cantidad} ${insumo.unidad}`,
+      monto: (parseFloat(insumo.precio) * parseFloat(insumo.cantidad)).toString(),
+      fecha: new Date().toISOString().split("T")[0],
+    };
+    setRegistrosFinanzas((prev) => [...prev, gastoFinanzas]);
   };
 
   const machos = animales.filter((a) => a.sexo === "Macho").length;
@@ -114,27 +115,25 @@ function Dashboard({ finca }) {
 
             {/* Info */}
             {vistaAnimal === "info" && (
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-gray-500 text-sm">Edad</p>
-                    <p className="text-xl font-bold text-gray-800">🎂 {animalSeleccionado.edad} años</p>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-gray-500 text-sm">Peso</p>
-                    <p className="text-xl font-bold text-gray-800">⚖️ {animalSeleccionado.peso} kg</p>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-gray-500 text-sm">Raza</p>
-                    <p className="text-xl font-bold text-gray-800">🐮 {animalSeleccionado.raza}</p>
-                  </div>
-                  {animalSeleccionado.sexo === "Hembra" && (
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-gray-500 text-sm">Crías</p>
-                      <p className="text-xl font-bold text-gray-800">🍼 {animalSeleccionado.crias || 0}</p>
-                    </div>
-                  )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-gray-500 text-sm">Edad</p>
+                  <p className="text-xl font-bold text-gray-800">🎂 {animalSeleccionado.edad} años</p>
                 </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-gray-500 text-sm">Peso</p>
+                  <p className="text-xl font-bold text-gray-800">⚖️ {animalSeleccionado.peso} kg</p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-gray-500 text-sm">Raza</p>
+                  <p className="text-xl font-bold text-gray-800">🐮 {animalSeleccionado.raza}</p>
+                </div>
+                {animalSeleccionado.sexo === "Hembra" && (
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <p className="text-gray-500 text-sm">Crías</p>
+                    <p className="text-xl font-bold text-gray-800">🍼 {animalSeleccionado.crias || 0}</p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -171,7 +170,6 @@ function Dashboard({ finca }) {
                   </button>
                 </div>
 
-                {/* Lista historial */}
                 <h3 className="font-bold text-gray-700 mb-3">Historial ({animalSeleccionado.historialSalud.length} registros)</h3>
                 {animalSeleccionado.historialSalud.length === 0 ? (
                   <p className="text-gray-400 text-center py-4">No hay registros de salud aún</p>
@@ -320,22 +318,14 @@ function Dashboard({ finca }) {
           )}
 
           {vista === "insumos" && (
-            <div className="px-8 text-center">
-              <div className="bg-white rounded-xl shadow p-10 max-w-lg mx-auto">
-                <p className="text-6xl">🌱</p>
-                <h2 className="text-2xl font-bold text-green-700 mt-4">Módulo de Insumos</h2>
-                <p className="text-gray-500 mt-2">Próximamente disponible</p>
-              </div>
+            <div className="px-8">
+              <Insumos onAgregarInsumo={agregarInsumoConFinanzas} />
             </div>
           )}
 
           {vista === "finanzas" && (
-            <div className="px-8 text-center">
-              <div className="bg-white rounded-xl shadow p-10 max-w-lg mx-auto">
-                <p className="text-6xl">💰</p>
-                <h2 className="text-2xl font-bold text-green-700 mt-4">Módulo de Finanzas</h2>
-                <p className="text-gray-500 mt-2">Próximamente disponible</p>
-              </div>
+            <div className="px-8">
+              <Finanzas registrosExternos={registrosFinanzas} onAgregarRegistro={(r) => setRegistrosFinanzas((prev) => [...prev, r])} />
             </div>
           )}
         </div>
