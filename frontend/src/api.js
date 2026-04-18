@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8000";
+const API_URL = "https://agroganaderiapro-api-944496395089.us-central1.run.app";
 
 // Fincas
 export const registrarFinca = async (datos) => {
