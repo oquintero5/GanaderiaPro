@@ -1,15 +1,30 @@
 import { useState } from "react";
+import { loginFinca } from "../api";
 
 function Login({ onRegister, onLogin }) {
   const [nombreFinca, setNombreFinca] = useState("");
   const [clave, setClave] = useState("");
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogin = () => {
-    if (nombreFinca && clave) {
-      onLogin({ nombreFinca });
-    } else {
-      alert("Por favor ingresa el nombre de la finca y la clave");
+  const handleLogin = async () => {
+    if (!nombreFinca || !clave) {
+      setError("Por favor ingresa el nombre de la finca y la clave");
+      return;
     }
+    setCargando(true);
+    setError("");
+    try {
+      const respuesta = await loginFinca({ nombre: nombreFinca, clave });
+      if (respuesta.finca_id) {
+        onLogin({ nombreFinca: respuesta.nombre, finca_id: respuesta.finca_id });
+      } else {
+        setError(respuesta.detail || "Nombre de finca o clave incorrectos");
+      }
+    } catch (e) {
+      setError("Error al conectar con el servidor");
+    }
+    setCargando(false);
   };
 
   return (
@@ -26,6 +41,12 @@ function Login({ onRegister, onLogin }) {
             <h1 className="text-4xl font-bold text-green-700">🐄 AgroGanaderíaPro</h1>
             <p className="text-gray-500 mt-2">Gestión integral para tu finca</p>
           </div>
+
+          {error && (
+            <div className="bg-red-100 text-red-600 px-4 py-3 rounded-lg mb-4 text-sm">
+              {error}
+            </div>
+          )}
 
           <div className="space-y-4">
             <div>
@@ -56,9 +77,10 @@ function Login({ onRegister, onLogin }) {
 
             <button
               onClick={handleLogin}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200"
+              disabled={cargando}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200 disabled:opacity-50"
             >
-              Ingresar
+              {cargando ? "Ingresando..." : "Ingresar"}
             </button>
 
             <div className="text-center mt-4">

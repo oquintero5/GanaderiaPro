@@ -1,8 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { listarFinanzas, crearFinanza } from "../api";
 
-function Finanzas({ registrosExternos = [], onAgregarRegistro }) {
+function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
   const [registrosLocales, setRegistrosLocales] = useState([]);
-const registros = [...registrosExternos, ...registrosLocales];
+  const registros = [...registrosExternos, ...registrosLocales];
+
+  useEffect(() => {
+    if (finca_id) cargarFinanzas();
+  }, [finca_id]);
+
+  const cargarFinanzas = async () => {
+    const data = await listarFinanzas(finca_id);
+    if (Array.isArray(data)) setRegistrosLocales(data);
+  };
   const [mostrarForm, setMostrarForm] = useState(false);
   const [form, setForm] = useState({
     tipo: "",
@@ -16,14 +26,26 @@ const registros = [...registrosExternos, ...registrosLocales];
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const agregarRegistro = () => {
+  const agregarRegistro = async () => {
     if (!form.tipo || !form.categoria || !form.monto || !form.fecha) {
       alert("Por favor completa los campos obligatorios");
       return;
     }
     const nuevoRegistro = { ...form, id: Date.now() };
-    setRegistrosLocales([...registrosLocales, nuevoRegistro]);
-      if (onAgregarRegistro) onAgregarRegistro(nuevoRegistro);
+try {
+  await crearFinanza({
+    finca_id,
+    tipo: form.tipo,
+    categoria: form.categoria,
+    descripcion: form.descripcion,
+    monto: parseFloat(form.monto),
+    fecha: form.fecha,
+  });
+  await cargarFinanzas();
+  if (onAgregarRegistro) onAgregarRegistro(nuevoRegistro);
+} catch (e) {
+  alert("Error al guardar el registro financiero");
+}
     setForm({ tipo: "", categoria: "", descripcion: "", monto: "", fecha: "" });
     setMostrarForm(false);
     alert("¡Registro agregado exitosamente!");

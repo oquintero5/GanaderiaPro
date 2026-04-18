@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { registrarFinca } from "../api";
 
 const paises = {
  "Colombia": ["Amazonas", "Antioquia", "Arauca", "Atlántico", "Bolívar", "Boyacá", "Caldas", "Caquetá", "Casanare", "Cauca", "Cesar", "Chocó", "Córdoba", "Cundinamarca", "Guainía", "Guaviare", "Huila", "La Guajira", "Magdalena", "Meta", "Nariño", "Norte de Santander", "Putumayo", "Quindío", "Risaralda", "San Andrés y Providencia", "Santander", "Sucre", "Tolima", "Valle del Cauca", "Vaupés", "Vichada"],
@@ -35,6 +36,7 @@ function Register({ onBack }) {
   });
 
   const [error, setError] = useState("");
+const [cargando, setCargando] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,7 +53,7 @@ function Register({ onBack }) {
     return clave.length >= 6 && tieneLetras && tieneNumeros;
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!form.nombreFinca || !form.nombre || !form.apellido || !form.celular ||
       !form.correo || !form.pais || !form.departamento || !form.municipio ||
       !form.vereda || !form.clave) {
@@ -66,8 +68,30 @@ function Register({ onBack }) {
       setError("Las claves no coinciden");
       return;
     }
-    alert("¡Finca registrada exitosamente! Ya puedes iniciar sesión.");
-    onBack();
+    setCargando(true);
+    setError("");
+    try {
+      const respuesta = await registrarFinca({
+        nombre: form.nombreFinca,
+        propietario: `${form.nombre} ${form.apellido}`,
+        correo: form.correo,
+        celular: form.celular,
+        pais: form.pais,
+        departamento: form.departamento,
+        municipio: form.municipio,
+        vereda: form.vereda,
+        clave: form.clave,
+      });
+      if (respuesta.finca_id) {
+        alert("¡Finca registrada exitosamente! Ya puedes iniciar sesión.");
+        onBack();
+      } else {
+        setError(respuesta.detail || "Error al registrar la finca");
+      }
+    } catch (e) {
+      setError("Error al conectar con el servidor");
+    }
+    setCargando(false);
   };
 
   return (
@@ -140,10 +164,10 @@ function Register({ onBack }) {
               value={form.confirmarClave} onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500" />
 
-            <button onClick={handleRegister}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200">
-              Registrar Finca
-            </button>
+            <button onClick={handleRegister} disabled={cargando}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200 disabled:opacity-50">
+                 {cargando ? "Registrando..." : "Registrar Finca"}
+             </button>
 
             <button onClick={onBack}
               className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-lg transition duration-200">

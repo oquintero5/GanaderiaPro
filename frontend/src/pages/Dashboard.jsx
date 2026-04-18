@@ -1,10 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import Insumos from "./Insumos";
 import Finanzas from "./Finanzas";
+import { listarAnimales, crearAnimal, agregarHistorial, listarHistorial } from "../api";
 
 function Dashboard({ finca }) {
   const [animales, setAnimales] = useState([]);
+const [cargando, setCargando] = useState(false);
+
+useEffect(() => {
+  if (finca?.finca_id) {
+    cargarAnimales();
+  }
+}, [finca]);
+
+const cargarAnimales = async () => {
+  const data = await listarAnimales(finca.finca_id);
+  if (Array.isArray(data)) setAnimales(data);
+};
   const [registrosFinanzas, setRegistrosFinanzas] = useState([]);
   const [mostrarFormAnimal, setMostrarFormAnimal] = useState(false);
   const [vista, setVista] = useState("inicio");
@@ -21,45 +34,69 @@ function Dashboard({ finca }) {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const agregarAnimal = () => {
+  const agregarAnimal = async () => {
     if (!form.nombre || !form.chapeta || !form.edad || !form.peso || !form.sexo || !form.raza) {
       alert("Por favor completa todos los campos obligatorios");
       return;
     }
-    setAnimales([...animales, { ...form, id: Date.now(), historialSalud: [] }]);
-    setForm({ nombre: "", chapeta: "", edad: "", peso: "", sexo: "", raza: "", crias: "" });
-    setMostrarFormAnimal(false);
-    alert("¡Animal registrado exitosamente!");
+    setCargando(true);
+    try {
+      const respuesta = await crearAnimal({
+        finca_id: finca.finca_id,
+        nombre: form.nombre,
+        chapeta: form.chapeta,
+        edad: parseFloat(form.edad),
+        peso: parseFloat(form.peso),
+        sexo: form.sexo,
+        raza: form.raza,
+        crias: parseInt(form.crias || 0),
+      });
+      if (respuesta.animal_id) {
+        await cargarAnimales();
+        setForm({ nombre: "", chapeta: "", edad: "", peso: "", sexo: "", raza: "", crias: "" });
+        setMostrarFormAnimal(false);
+        alert("¡Animal registrado exitosamente!");
+      }
+    } catch (e) {
+      alert("Error al guardar el animal");
+    }
+    setCargando(false);
   };
 
-  const agregarRegistroSalud = () => {
+  const agregarRegistroSalud = async () => {
     if (!nuevoRegistroSalud.fecha || !nuevoRegistroSalud.tipo || !nuevoRegistroSalud.producto) {
       alert("Por favor completa los campos obligatorios");
       return;
     }
-    const animalesActualizados = animales.map((a) => {
-      if (a.id === animalSeleccionado.id) {
-        return { ...a, historialSalud: [...a.historialSalud, { ...nuevoRegistroSalud, id: Date.now() }] };
-      }
-      return a;
-    });
-    setAnimales(animalesActualizados);
-    setAnimalSeleccionado(animalesActualizados.find((a) => a.id === animalSeleccionado.id));
-    setNuevoRegistroSalud({ fecha: "", tipo: "", producto: "", dosis: "", observaciones: "" });
-    alert("¡Registro de salud agregado!");
+    try {
+      await agregarHistorial({
+        animal_id: animalSeleccionado.id,
+        ...nuevoRegistroSalud,
+      });
+      const historial = await listarHistorial(animalSeleccionado.id);
+      setAnimalSeleccionado({ ...animalSeleccionado, historialSalud: historial });
+      setNuevoRegistroSalud({ fecha: "", tipo: "", producto: "", dosis: "", observaciones: "" });
+      alert("¡Registro de salud agregado!");
+    } catch (e) {
+      alert("Error al guardar el registro de salud");
+    }
   };
 
   // Cuando se agrega un insumo, se registra automáticamente en finanzas
-  const agregarInsumoConFinanzas = (insumo) => {
-    const gastoFinanzas = {
-      id: Date.now(),
-      tipo: "Gasto",
-      categoria: "Compra de Insumos",
-      descripcion: `${insumo.nombre} - ${insumo.cantidad} ${insumo.unidad}`,
-      monto: (parseFloat(insumo.precio) * parseFloat(insumo.cantidad)).toString(),
-      fecha: new Date().toISOString().split("T")[0],
-    };
-    setRegistrosFinanzas((prev) => [...prev, gastoFinanzas]);
+  const agregarInsumoConFinanzas = async (insumo) => {
+    try {
+      const { crearFinanza } = await import("../api");
+      await crearFinanza({
+        finca_id: finca?.finca_id,
+        tipo: "Gasto",
+        categoria: "Compra de Insumos",
+        descripcion: `${insumo.nombre} - ${insumo.cantidad} ${insumo.unidad}`,
+        monto: parseFloat(insumo.precio) * parseFloat(insumo.cantidad),
+        fecha: new Date().toISOString().split("T")[0],
+      });
+    } catch (e) {
+      console.error("Error al guardar gasto en finanzas", e);
+    }
   };
 
   const machos = animales.filter((a) => a.sexo === "Macho").length;
@@ -318,16 +355,23 @@ function Dashboard({ finca }) {
           )}
 
           {vista === "insumos" && (
-            <div className="px-8">
-              <Insumos onAgregarInsumo={agregarInsumoConFinanzas} />
-            </div>
-          )}
+  <div className="px-8">
+    <Insumos 
+      onAgregarInsumo={agregarInsumoConFinanzas} 
+      finca_id={finca?.finca_id} 
+    />
+  </div>
+)}
 
-          {vista === "finanzas" && (
-            <div className="px-8">
-              <Finanzas registrosExternos={registrosFinanzas} onAgregarRegistro={(r) => setRegistrosFinanzas((prev) => [...prev, r])} />
-            </div>
-          )}
+{vista === "finanzas" && (
+  <div className="px-8">
+    <Finanzas 
+      registrosExternos={registrosFinanzas} 
+      onAgregarRegistro={(r) => setRegistrosFinanzas((prev) => [...prev, r])}
+      finca_id={finca?.finca_id}
+    />
+  </div>
+)}
         </div>
       )}
     </div>

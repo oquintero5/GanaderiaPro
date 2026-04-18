@@ -1,7 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { listarInsumos, crearInsumo } from "../api";
 
-function Insumos({ onAgregarInsumo }) {
+function Insumos({ onAgregarInsumo, finca_id }) {
   const [insumos, setInsumos] = useState([]);
+
+  useEffect(() => {
+    if (finca_id) cargarInsumos();
+  }, [finca_id]);
+
+  const cargarInsumos = async () => {
+    const data = await listarInsumos(finca_id);
+    if (Array.isArray(data)) setInsumos(data);
+  };
   const [mostrarForm, setMostrarForm] = useState(false);
   const [form, setForm] = useState({
     nombre: "",
@@ -16,17 +26,30 @@ function Insumos({ onAgregarInsumo }) {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const agregarInsumo = () => {
+  const agregarInsumo = async () => {
     if (!form.nombre || !form.categoria || !form.cantidad || !form.precio) {
       alert("Por favor completa los campos obligatorios");
       return;
     }
-    const nuevoInsumo = { ...form, id: Date.now() };
-setInsumos([...insumos, nuevoInsumo]);
-if (onAgregarInsumo) onAgregarInsumo(nuevoInsumo);
-setForm({ nombre: "", categoria: "", cantidad: "", unidad: "", precio: "", proveedor: "" });
-setMostrarForm(false);
-alert("¡Insumo agregado exitosamente!");
+    try {
+      const nuevoInsumo = { ...form, finca_id };
+      await crearInsumo({
+        finca_id,
+        nombre: form.nombre,
+        categoria: form.categoria,
+        cantidad: parseFloat(form.cantidad),
+        unidad: form.unidad,
+        precio: parseFloat(form.precio),
+        proveedor: form.proveedor,
+      });
+      if (onAgregarInsumo) onAgregarInsumo(nuevoInsumo);
+      await cargarInsumos();
+      setForm({ nombre: "", categoria: "", cantidad: "", unidad: "", precio: "", proveedor: "" });
+      setMostrarForm(false);
+      alert("¡Insumo agregado exitosamente!");
+    } catch (e) {
+      alert("Error al guardar el insumo");
+    }
   };
 
   const totalInvertido = insumos.reduce((acc, i) => acc + (parseFloat(i.precio) * parseFloat(i.cantidad) || 0), 0);
