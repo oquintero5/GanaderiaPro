@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import Insumos from "./Insumos";
 import Finanzas from "./Finanzas";
+import Lecheria from "./Lecheria";
 import { listarAnimales, crearAnimal, agregarHistorial, listarHistorial, actualizarAnimal, actualizarHistorial } from "../api";
 
 function Dashboard({ finca }) {
@@ -402,20 +403,24 @@ function Dashboard({ finca }) {
 
       ) : (
         <div className="px-8 py-6">
-          <div className="flex justify-center gap-4 mb-6">
-            <button onClick={() => setVista("inicio")}
-              className={`px-6 py-3 rounded-lg font-bold transition duration-200 ${vista === "inicio" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
-              🐄 Ganado
-            </button>
-            <button onClick={() => setVista("insumos")}
-              className={`px-6 py-3 rounded-lg font-bold transition duration-200 ${vista === "insumos" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
-              🌱 Insumos
-            </button>
-            <button onClick={() => setVista("finanzas")}
-              className={`px-6 py-3 rounded-lg font-bold transition duration-200 ${vista === "finanzas" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
-              💰 Finanzas
-            </button>
-          </div>
+          <div className="flex justify-center gap-4 mb-6 flex-wrap">
+  <button onClick={() => setVista("lecheria")}
+    className={`px-6 py-3 rounded-lg font-bold transition duration-200 ${vista === "lecheria" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+    🥛 Lechería
+  </button>
+  <button onClick={() => setVista("inicio")}
+    className={`px-6 py-3 rounded-lg font-bold transition duration-200 ${vista === "inicio" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+    🐄 Ganado
+  </button>
+  <button onClick={() => setVista("insumos")}
+    className={`px-6 py-3 rounded-lg font-bold transition duration-200 ${vista === "insumos" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+    🌱 Insumos
+  </button>
+  <button onClick={() => setVista("finanzas")}
+    className={`px-6 py-3 rounded-lg font-bold transition duration-200 ${vista === "finanzas" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+    💰 Finanzas
+  </button>
+</div>
 
           {vista === "inicio" && (
             <div>
@@ -427,7 +432,6 @@ function Dashboard({ finca }) {
                   onChange={(e) => setBusqueda(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 bg-white shadow" />
               </div>
-
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="bg-white rounded-xl shadow p-6 text-center">
                   <p className="text-gray-500 text-sm">Total Animales</p>
@@ -442,14 +446,12 @@ function Dashboard({ finca }) {
                   <p className="text-4xl font-bold text-pink-600">{hembras}</p>
                 </div>
               </div>
-
               <div className="text-center mb-6">
                 <button onClick={() => setMostrarFormAnimal(!mostrarFormAnimal)}
                   className="bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
                   {mostrarFormAnimal ? "Cancelar" : "➕ Agregar Animal"}
                 </button>
               </div>
-
               {mostrarFormAnimal && (
                 <div className="bg-white rounded-xl shadow p-6 mb-6 max-w-lg mx-auto">
                   <h2 className="text-xl font-bold text-green-700 mb-4">Registrar Nuevo Animal</h2>
@@ -481,7 +483,6 @@ function Dashboard({ finca }) {
                   </div>
                 </div>
               )}
-
               {animalesFiltrados.length === 0 ? (
                 <div className="text-center text-gray-400 mt-10">
                   <p className="text-6xl">🐄</p>
@@ -529,14 +530,20 @@ function Dashboard({ finca }) {
             </div>
           )}
 
+          {vista === "lecheria" && (
+            <div>
+              <Lecheria finca_id={finca?.finca_id} />
+            </div>
+          )}
+
           {vista === "insumos" && (
-            <div className="px-8">
+            <div>
               <Insumos onAgregarInsumo={agregarInsumoConFinanzas} finca_id={finca?.finca_id} />
             </div>
           )}
 
           {vista === "finanzas" && (
-            <div className="px-8">
+            <div>
               <Finanzas registrosExternos={registrosFinanzas} onAgregarRegistro={(r) => setRegistrosFinanzas((prev) => [...prev, r])} finca_id={finca?.finca_id} />
             </div>
           )}
