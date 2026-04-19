@@ -165,3 +165,25 @@ def crear_finanza(finanza: FinanzaCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(nueva_finanza)
     return {"mensaje": "Registro financiero agregado exitosamente"}
+
+class RegistroLecheCreate(BaseModel):
+    finca_id: int
+    fecha: str
+    litros: float
+    precio_litro: float
+    frecuencia_pago: Optional[str] = "Mensual"
+
+@router.get("/leche/{finca_id}")
+def listar_leche(finca_id: int, db: Session = Depends(get_db)):
+    registros = db.query(models.RegistroLeche).filter(
+        models.RegistroLeche.finca_id == finca_id
+    ).all()
+    return registros
+
+@router.post("/leche")
+def crear_registro_leche(registro: RegistroLecheCreate, db: Session = Depends(get_db)):
+    nuevo_registro = models.RegistroLeche(**registro.dict())
+    db.add(nuevo_registro)
+    db.commit()
+    db.refresh(nuevo_registro)
+    return {"mensaje": "Registro de leche agregado exitosamente", "id": nuevo_registro.id}

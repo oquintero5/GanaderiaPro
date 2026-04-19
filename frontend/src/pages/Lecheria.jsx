@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { listarLeche, crearRegistroLeche } from "../api";
 
 function Lecheria({ finca_id }) {
   const [registros, setRegistros] = useState([]);
@@ -10,46 +11,59 @@ function Lecheria({ finca_id }) {
     frecuenciaPago: "Mensual",
   });
 
+  useEffect(() => {
+    if (finca_id) cargarRegistros();
+  }, [finca_id]);
+
+  const cargarRegistros = async () => {
+    const data = await listarLeche(finca_id);
+    if (Array.isArray(data)) setRegistros(data);
+  };
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const agregarRegistro = () => {
+  const agregarRegistro = async () => {
     if (!form.fecha || !form.litros || !form.precioLitro) {
       alert("Por favor completa todos los campos obligatorios");
       return;
     }
-    setRegistros([...registros, { ...form, id: Date.now() }]);
-    setForm({ fecha: "", litros: "", precioLitro: "", frecuenciaPago: "Mensual" });
-    setMostrarForm(false);
-    alert("¡Registro de leche agregado!");
+    try {
+      await crearRegistroLeche({
+        finca_id,
+        fecha: form.fecha,
+        litros: parseFloat(form.litros),
+        precio_litro: parseFloat(form.precioLitro),
+        frecuencia_pago: form.frecuenciaPago,
+      });
+      await cargarRegistros();
+      setForm({ fecha: "", litros: "", precioLitro: "", frecuenciaPago: "Mensual" });
+      setMostrarForm(false);
+      alert("¡Registro de leche agregado!");
+    } catch (e) {
+      alert("Error al guardar el registro");
+    }
   };
 
-  // Estadísticas
   const totalLitros = registros.reduce((acc, r) => acc + parseFloat(r.litros || 0), 0);
-  const totalIngresos = registros.reduce((acc, r) => acc + (parseFloat(r.litros || 0) * parseFloat(r.precioLitro || 0)), 0);
+  const totalIngresos = registros.reduce(
+    (acc, r) => acc + parseFloat(r.litros || 0) * parseFloat(r.precio_litro || 0),
+    0
+  );
   const promedioDiario = registros.length > 0 ? totalLitros / registros.length : 0;
 
-  // Agrupar por mes
   const registrosPorMes = registros.reduce((acc, r) => {
     const mes = r.fecha.substring(0, 7);
     if (!acc[mes]) acc[mes] = { litros: 0, ingresos: 0, dias: 0 };
     acc[mes].litros += parseFloat(r.litros || 0);
-    acc[mes].ingresos += parseFloat(r.litros || 0) * parseFloat(r.precioLitro || 0);
+    acc[mes].ingresos += parseFloat(r.litros || 0) * parseFloat(r.precio_litro || 0);
     acc[mes].dias += 1;
     return acc;
   }, {});
 
-  // Calcular pago según frecuencia
-  const calcularPago = (frecuencia) => {
-    if (frecuencia === "Semanal") return totalIngresos / 4;
-    if (frecuencia === "Quincenal") return totalIngresos / 2;
-    return totalIngresos;
-  };
-
   return (
     <div>
-      {/* Estadísticas generales */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl shadow p-4 text-center">
           <p className="text-gray-500 text-sm">Total Litros</p>
@@ -73,7 +87,6 @@ function Lecheria({ finca_id }) {
         </div>
       </div>
 
-      {/* Pago estimado */}
       {registros.length > 0 && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
           <h3 className="font-bold text-green-700 mb-3">💵 Pago Estimado por Frecuencia</h3>
@@ -94,7 +107,6 @@ function Lecheria({ finca_id }) {
         </div>
       )}
 
-      {/* Botón agregar */}
       <div className="text-center mb-6">
         <button onClick={() => setMostrarForm(!mostrarForm)}
           className="bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
@@ -102,7 +114,6 @@ function Lecheria({ finca_id }) {
         </button>
       </div>
 
-      {/* Formulario */}
       {mostrarForm && (
         <div className="bg-white rounded-xl shadow p-6 mb-6 max-w-lg mx-auto">
           <h2 className="text-xl font-bold text-green-700 mb-4">🥛 Registro Diario de Leche</h2>
@@ -139,7 +150,6 @@ function Lecheria({ finca_id }) {
         </div>
       )}
 
-      {/* Estadísticas por mes */}
       {Object.keys(registrosPorMes).length > 0 && (
         <div className="mb-6">
           <h3 className="font-bold text-gray-700 mb-3">📊 Resumen por Mes</h3>
@@ -170,7 +180,6 @@ function Lecheria({ finca_id }) {
         </div>
       )}
 
-      {/* Lista de registros */}
       <h3 className="font-bold text-gray-700 mb-3">📋 Registros Diarios</h3>
       {registros.length === 0 ? (
         <div className="text-center text-gray-400 mt-10">
@@ -184,12 +193,12 @@ function Lecheria({ finca_id }) {
             <div key={registro.id} className="bg-white rounded-xl shadow p-4 flex justify-between items-center">
               <div>
                 <p className="font-bold text-gray-800">📅 {registro.fecha}</p>
-                <p className="text-gray-500 text-sm">💰 Precio: ${parseFloat(registro.precioLitro).toLocaleString()}/L</p>
-                <p className="text-gray-500 text-sm">🔄 Pago: {registro.frecuenciaPago}</p>
+                <p className="text-gray-500 text-sm">💰 Precio: ${parseFloat(registro.precio_litro).toLocaleString()}/L</p>
+                <p className="text-gray-500 text-sm">🔄 Pago: {registro.frecuencia_pago}</p>
               </div>
               <div className="text-right">
                 <p className="text-2xl font-bold text-blue-600">{parseFloat(registro.litros).toFixed(1)} L</p>
-                <p className="text-green-600 font-semibold">${(parseFloat(registro.litros) * parseFloat(registro.precioLitro)).toLocaleString()}</p>
+                <p className="text-green-600 font-semibold">${(parseFloat(registro.litros) * parseFloat(registro.precio_litro)).toLocaleString()}</p>
               </div>
             </div>
           ))}

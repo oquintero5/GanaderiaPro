@@ -64,3 +64,13 @@ class Finanza(Base):
     monto = Column(Float)
     fecha = Column(String)
     creado_en = Column(DateTime, default=datetime.utcnow)
+    
+class RegistroLeche(Base):
+    __tablename__ = "registros_leche"
+    id = Column(Integer, primary_key=True, index=True)
+    finca_id = Column(Integer, ForeignKey("fincas.id"))
+    fecha = Column(String, nullable=False)
+    litros = Column(Float, nullable=False)
+    precio_litro = Column(Float, nullable=False)
+    frecuencia_pago = Column(String, default="Mensual")
+    creado_en = Column(DateTime, default=datetime.utcnow)    

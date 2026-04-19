@@ -104,3 +104,18 @@ export const actualizarHistorial = async (registro_id, datos) => {
   });
   return res.json();
 };
+
+// Lechería
+export const listarLeche = async (finca_id) => {
+  const res = await fetch(`${API_URL}/leche/${finca_id}`);
+  return res.json();
+};
+
+export const crearRegistroLeche = async (datos) => {
+  const res = await fetch(`${API_URL}/leche`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos),
+  });
+  return res.json();
+};
