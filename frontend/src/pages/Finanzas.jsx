@@ -13,13 +13,10 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
     const data = await listarFinanzas(finca_id);
     if (Array.isArray(data)) setRegistrosLocales(data);
   };
+
   const [mostrarForm, setMostrarForm] = useState(false);
   const [form, setForm] = useState({
-    tipo: "",
-    categoria: "",
-    descripcion: "",
-    monto: "",
-    fecha: "",
+    tipo: "", categoria: "", descripcion: "", monto: "", fecha: "",
   });
 
   const handleChange = (e) => {
@@ -32,21 +29,21 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
       return;
     }
     try {
-  await crearFinanza({
-    finca_id,
-    tipo: form.tipo,
-    categoria: form.categoria,
-    descripcion: form.descripcion,
-    monto: parseFloat(form.monto),
-    fecha: form.fecha,
-  });
-  await cargarFinanzas();
-} catch (e) {
-  alert("Error al guardar el registro financiero");
-}
-    setForm({ tipo: "", categoria: "", descripcion: "", monto: "", fecha: "" });
-    setMostrarForm(false);
-    alert("¡Registro agregado exitosamente!");
+      await crearFinanza({
+        finca_id,
+        tipo: form.tipo,
+        categoria: form.categoria,
+        descripcion: form.descripcion,
+        monto: parseFloat(form.monto),
+        fecha: form.fecha,
+      });
+      await cargarFinanzas();
+      setForm({ tipo: "", categoria: "", descripcion: "", monto: "", fecha: "" });
+      setMostrarForm(false);
+      alert("¡Registro agregado exitosamente!");
+    } catch (e) {
+      alert("Error al guardar el registro financiero");
+    }
   };
 
   const totalIngresos = registros
@@ -59,32 +56,39 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
 
   const balance = totalIngresos - totalGastos;
 
+  // Formatea números grandes: 3000000 → $3M, 150000 → $150K
+  const formatMonto = (valor) => {
+    if (Math.abs(valor) >= 1000000) return `$${(valor / 1000000).toFixed(1)}M`;
+    if (Math.abs(valor) >= 1000) return `$${(valor / 1000).toFixed(0)}K`;
+    return `$${valor.toLocaleString()}`;
+  };
+
   return (
     <div>
-      {/* Resumen */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl shadow p-6 text-center">
-          <p className="text-gray-500 text-sm">Total Ingresos</p>
-          <p className="text-3xl font-bold text-green-600">
-            ${totalIngresos.toLocaleString()}
+      {/* Resumen — tarjetas compactas para móvil */}
+      <div className="grid grid-cols-3 gap-2 mb-6">
+        <div className="bg-white rounded-xl shadow p-3 text-center">
+          <p className="text-gray-500 text-xs mb-1">Ingresos</p>
+          <p className="text-lg font-bold text-green-600 leading-tight">
+            {formatMonto(totalIngresos)}
           </p>
         </div>
-        <div className="bg-white rounded-xl shadow p-6 text-center">
-          <p className="text-gray-500 text-sm">Total Gastos</p>
-          <p className="text-3xl font-bold text-red-500">
-            ${totalGastos.toLocaleString()}
+        <div className="bg-white rounded-xl shadow p-3 text-center">
+          <p className="text-gray-500 text-xs mb-1">Gastos</p>
+          <p className="text-lg font-bold text-red-500 leading-tight">
+            {formatMonto(totalGastos)}
           </p>
         </div>
-        <div className="bg-white rounded-xl shadow p-6 text-center">
-          <p className="text-gray-500 text-sm">Balance</p>
-          <p className={`text-3xl font-bold ${balance >= 0 ? "text-green-600" : "text-red-500"}`}>
-            ${balance.toLocaleString()}
+        <div className="bg-white rounded-xl shadow p-3 text-center">
+          <p className="text-gray-500 text-xs mb-1">Balance</p>
+          <p className={`text-lg font-bold leading-tight ${balance >= 0 ? "text-green-600" : "text-red-500"}`}>
+            {formatMonto(balance)}
           </p>
         </div>
       </div>
 
       {/* Botón agregar */}
-      <div className="text-center mb-6">
+      <div className="text-center mb-4">
         <button onClick={() => setMostrarForm(!mostrarForm)}
           className="bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
           {mostrarForm ? "Cancelar" : "➕ Agregar Registro"}
@@ -93,10 +97,9 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
 
       {/* Formulario */}
       {mostrarForm && (
-        <div className="bg-white rounded-xl shadow p-6 mb-6 max-w-lg mx-auto">
-          <h2 className="text-xl font-bold text-green-700 mb-4">Nuevo Registro</h2>
+        <div className="bg-white rounded-xl shadow p-4 mb-4 max-w-lg mx-auto">
+          <h2 className="text-lg font-bold text-green-700 mb-4">Nuevo Registro</h2>
           <div className="space-y-3">
-
             <select name="tipo" value={form.tipo} onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500">
               <option value="">Tipo de registro *</option>
@@ -157,17 +160,17 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
           {registros.map((registro) => (
             <div key={registro.id}
               className={`bg-white rounded-xl shadow p-4 border-l-4 ${registro.tipo === "Ingreso" ? "border-green-500" : "border-red-500"}`}>
-              <div className="flex justify-between items-center">
-                <div>
-                  <span className={`font-bold text-sm px-2 py-1 rounded-full ${registro.tipo === "Ingreso" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
+              <div className="flex justify-between items-center gap-2">
+                <div className="flex-1 min-w-0">
+                  <span className={`font-bold text-xs px-2 py-1 rounded-full ${registro.tipo === "Ingreso" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-600"}`}>
                     {registro.tipo === "Ingreso" ? "💰" : "💸"} {registro.tipo}
                   </span>
-                  <p className="font-bold text-gray-800 mt-1">{registro.categoria}</p>
-                  {registro.descripcion && <p className="text-gray-500 text-sm">{registro.descripcion}</p>}
-                  <p className="text-gray-400 text-sm">📅 {registro.fecha}</p>
+                  <p className="font-bold text-gray-800 mt-1 text-sm">{registro.categoria}</p>
+                  {registro.descripcion && <p className="text-gray-500 text-xs truncate">{registro.descripcion}</p>}
+                  <p className="text-gray-400 text-xs">📅 {registro.fecha}</p>
                 </div>
-                <p className={`text-2xl font-bold ${registro.tipo === "Ingreso" ? "text-green-600" : "text-red-500"}`}>
-                  ${parseFloat(registro.monto).toLocaleString()}
+                <p className={`text-lg font-bold whitespace-nowrap ${registro.tipo === "Ingreso" ? "text-green-600" : "text-red-500"}`}>
+                  {formatMonto(parseFloat(registro.monto))}
                 </p>
               </div>
             </div>
