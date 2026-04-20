@@ -119,3 +119,27 @@ export const crearRegistroLeche = async (datos) => {
   });
   return res.json();
 };
+
+// Obreros
+export const listarObreros = async (finca_id) => {
+  const res = await fetch(`${API_URL}/obreros/${finca_id}`);
+  return res.json();
+};
+
+export const crearObrero = async (datos) => {
+  const res = await fetch(`${API_URL}/obreros`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos),
+  });
+  return res.json();
+};
+
+export const actualizarPagoObrero = async (obrero_id, datos) => {
+  const res = await fetch(`${API_URL}/obreros/${obrero_id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos),
+  });
+  return res.json();
+};

@@ -186,4 +186,37 @@ def crear_registro_leche(registro: RegistroLecheCreate, db: Session = Depends(ge
     db.add(nuevo_registro)
     db.commit()
     db.refresh(nuevo_registro)
+class ObreroCreate(BaseModel):
+    finca_id: int
+    nombre: str
+    dias_trabajados: float
+    precio_jornal: float
+    total_pagar: float
+    fecha: str
+    comentario: Optional[str] = ""
+    pagado: bool = False
+
+@router.get("/obreros/{finca_id}")
+def listar_obreros(finca_id: int, db: Session = Depends(get_db)):
+    obreros = db.query(models.Obrero).filter(models.Obrero.finca_id == finca_id).all()
+    return obreros
+
+@router.post("/obreros")
+def crear_obrero(obrero: ObreroCreate, db: Session = Depends(get_db)):
+    nuevo_obrero = models.Obrero(**obrero.dict())
+    db.add(nuevo_obrero)
+    db.commit()
+    db.refresh(nuevo_obrero)
+    return {"mensaje": "Obrero registrado exitosamente", "id": nuevo_obrero.id}
+
+@router.put("/obreros/{obrero_id}")
+def actualizar_pago_obrero(obrero_id: int, datos: ObreroCreate, db: Session = Depends(get_db)):
+    obrero = db.query(models.Obrero).filter(models.Obrero.id == obrero_id).first()
+    if not obrero:
+        raise HTTPException(status_code=404, detail="Obrero no encontrado")
+    for key, value in datos.dict().items():
+        setattr(obrero, key, value)
+    db.commit()
+    db.refresh(obrero)
+    return {"mensaje": "Obrero actualizado exitosamente"}    
     return {"mensaje": "Registro de leche agregado exitosamente", "id": nuevo_registro.id}

@@ -73,4 +73,17 @@ class RegistroLeche(Base):
     litros = Column(Float, nullable=False)
     precio_litro = Column(Float, nullable=False)
     frecuencia_pago = Column(String, default="Mensual")
+    creado_en = Column(DateTime, default=datetime.utcnow)
+    
+    class Obrero(Base):
+    __tablename__ = "obreros"
+    id = Column(Integer, primary_key=True, index=True)
+    finca_id = Column(Integer, ForeignKey("fincas.id"))
+    nombre = Column(String, nullable=False)
+    dias_trabajados = Column(Float, nullable=False)
+    precio_jornal = Column(Float, nullable=False)
+    total_pagar = Column(Float, nullable=False)
+    fecha = Column(String, nullable=False)
+    comentario = Column(String, default="")
+    pagado = Column(Boolean, default=False)
     creado_en = Column(DateTime, default=datetime.utcnow)    

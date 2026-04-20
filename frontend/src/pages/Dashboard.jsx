@@ -3,6 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import Insumos from "./Insumos";
 import Finanzas from "./Finanzas";
 import Lecheria from "./Lecheria";
+import Obreros from "./Obreros";
 import { listarAnimales, crearAnimal, agregarHistorial, listarHistorial, actualizarAnimal, actualizarHistorial } from "../api";
 
 function Dashboard({ finca }) {
@@ -413,21 +414,26 @@ function Dashboard({ finca }) {
         <div className="px-4 py-4">
 
           {/* BOTONES DE NAVEGACIÓN */}
-          <div className="grid grid-cols-2 gap-2 mb-4">
+          {/* BOTONES DE NAVEGACIÓN — una sola fila con scroll horizontal */}
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
             <button onClick={() => setVista("lecheria")}
-              className={`py-3 rounded-lg font-bold text-sm transition duration-200 ${vista === "lecheria" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "lecheria" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
               🥛 Lechería
             </button>
             <button onClick={() => setVista("inicio")}
-              className={`py-3 rounded-lg font-bold text-sm transition duration-200 ${vista === "inicio" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "inicio" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
               🐄 Ganado
             </button>
             <button onClick={() => setVista("insumos")}
-              className={`py-3 rounded-lg font-bold text-sm transition duration-200 ${vista === "insumos" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "insumos" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
               🌱 Insumos
             </button>
+            <button onClick={() => setVista("obreros")}
+              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "obreros" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+              👷 Obreros
+            </button>
             <button onClick={() => setVista("finanzas")}
-              className={`py-3 rounded-lg font-bold text-sm transition duration-200 ${vista === "finanzas" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "finanzas" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
               💰 Finanzas
             </button>
           </div>
@@ -547,6 +553,7 @@ function Dashboard({ finca }) {
 
           {vista === "lecheria" && <Lecheria finca_id={finca?.finca_id} />}
           {vista === "insumos" && <Insumos onAgregarInsumo={agregarInsumoConFinanzas} finca_id={finca?.finca_id} />}
+          {vista === "obreros" && <Obreros finca_id={finca?.finca_id} />}
           {vista === "finanzas" && (
             <Finanzas
               registrosExternos={registrosFinanzas}
