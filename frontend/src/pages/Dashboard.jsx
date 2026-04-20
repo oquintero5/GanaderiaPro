@@ -148,6 +148,13 @@ function Dashboard({ finca }) {
     }
   };
 
+  // Formatea números grandes de forma compacta: 3000000 → $3M, 150000 → $150K
+  const formatMonto = (valor) => {
+    if (valor >= 1000000) return `$${(valor / 1000000).toFixed(1)}M`;
+    if (valor >= 1000) return `$${(valor / 1000).toFixed(0)}K`;
+    return `$${valor}`;
+  };
+
   const machos = animales.filter((a) => a.sexo === "Macho").length;
   const hembras = animales.filter((a) => a.sexo === "Hembra").length;
   const animalesFiltrados = animales.filter((a) =>
@@ -162,41 +169,42 @@ function Dashboard({ finca }) {
   return (
     <div className="min-h-screen bg-gray-100">
 
-      <div className="bg-green-700 text-white py-6 px-8 shadow-lg">
-        <h1 className="text-4xl font-bold text-center">🐄 {finca?.nombreFinca || "Mi Finca"}</h1>
-        <p className="text-center text-green-200 mt-1">AgroGanaderíaPro</p>
+      {/* HEADER */}
+      <div className="bg-green-700 text-white py-4 px-4 shadow-lg">
+        <h1 className="text-2xl font-bold text-center">🐄 {finca?.nombreFinca || "Mi Finca"}</h1>
+        <p className="text-center text-green-200 text-sm mt-1">AgroGanaderíaPro</p>
       </div>
 
       {animalSeleccionado ? (
-        <div className="px-8 py-6 max-w-2xl mx-auto">
+        <div className="px-4 py-4 max-w-2xl mx-auto">
           <button onClick={() => { setAnimalSeleccionado(null); setVistaAnimal("info"); setEditandoAnimal(false); }}
             className="mb-4 text-green-600 font-semibold hover:underline">
             ← Volver al listado
           </button>
 
-          <div className="bg-white rounded-xl shadow p-6">
+          <div className="bg-white rounded-xl shadow p-4">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h2 className="text-3xl font-bold text-green-700">{animalSeleccionado.nombre}</h2>
-                <p className="text-gray-500">Chapeta: {animalSeleccionado.chapeta}</p>
+                <h2 className="text-2xl font-bold text-green-700">{animalSeleccionado.nombre}</h2>
+                <p className="text-gray-500 text-sm">Chapeta: {animalSeleccionado.chapeta}</p>
               </div>
               <span className={`px-3 py-1 rounded-full text-sm font-semibold ${animalSeleccionado.sexo === "Macho" ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"}`}>
                 {animalSeleccionado.sexo}
               </span>
             </div>
 
-            <div className="flex gap-2 mb-6">
+            <div className="flex gap-2 mb-4 overflow-x-auto">
               <button onClick={() => setVistaAnimal("info")}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm ${vistaAnimal === "info" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600"}`}>
+                className={`px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap ${vistaAnimal === "info" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600"}`}>
                 📋 Información
               </button>
               <button onClick={() => setVistaAnimal("salud")}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm ${vistaAnimal === "salud" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600"}`}>
-                💉 Historial de Salud
+                className={`px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap ${vistaAnimal === "salud" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600"}`}>
+                💉 Salud
               </button>
               <button onClick={() => setVistaAnimal("qr")}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm ${vistaAnimal === "qr" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600"}`}>
-                📱 Código QR
+                className={`px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap ${vistaAnimal === "qr" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600"}`}>
+                📱 QR
               </button>
             </div>
 
@@ -204,23 +212,23 @@ function Dashboard({ finca }) {
               <div>
                 {!editandoAnimal ? (
                   <div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <p className="text-gray-500 text-sm">Edad</p>
-                        <p className="text-xl font-bold text-gray-800">🎂 {animalSeleccionado.edad} años</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <p className="text-gray-500 text-xs">Edad</p>
+                        <p className="text-lg font-bold text-gray-800">🎂 {animalSeleccionado.edad} años</p>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <p className="text-gray-500 text-sm">Peso</p>
-                        <p className="text-xl font-bold text-gray-800">⚖️ {animalSeleccionado.peso} kg</p>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <p className="text-gray-500 text-xs">Peso</p>
+                        <p className="text-lg font-bold text-gray-800">⚖️ {animalSeleccionado.peso} kg</p>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <p className="text-gray-500 text-sm">Raza</p>
-                        <p className="text-xl font-bold text-gray-800">🐮 {animalSeleccionado.raza}</p>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <p className="text-gray-500 text-xs">Raza</p>
+                        <p className="text-lg font-bold text-gray-800">🐮 {animalSeleccionado.raza}</p>
                       </div>
                       {animalSeleccionado.sexo === "Hembra" && (
-                        <div className="bg-gray-50 rounded-lg p-4">
-                          <p className="text-gray-500 text-sm">Crías</p>
-                          <p className="text-xl font-bold text-gray-800">🍼 {animalSeleccionado.crias || 0}</p>
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <p className="text-gray-500 text-xs">Crías</p>
+                          <p className="text-lg font-bold text-gray-800">🍼 {animalSeleccionado.crias || 0}</p>
                         </div>
                       )}
                     </div>
@@ -387,7 +395,7 @@ function Dashboard({ finca }) {
 
             {vistaAnimal === "qr" && (
               <div className="text-center">
-                <p className="text-gray-500 mb-4">Comparte este QR para que cualquier persona pueda ver la información de este animal</p>
+                <p className="text-gray-500 mb-4 text-sm">Comparte este QR para ver la información de este animal</p>
                 <div className="flex justify-center mb-4">
                   <QRCodeSVG value={infoQR} size={200} />
                 </div>
@@ -402,59 +410,65 @@ function Dashboard({ finca }) {
         </div>
 
       ) : (
-        <div className="px-8 py-6">
-          <div className="flex justify-center gap-4 mb-6 flex-wrap">
-  <button onClick={() => setVista("lecheria")}
-    className={`px-6 py-3 rounded-lg font-bold transition duration-200 ${vista === "lecheria" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
-    🥛 Lechería
-  </button>
-  <button onClick={() => setVista("inicio")}
-    className={`px-6 py-3 rounded-lg font-bold transition duration-200 ${vista === "inicio" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
-    🐄 Ganado
-  </button>
-  <button onClick={() => setVista("insumos")}
-    className={`px-6 py-3 rounded-lg font-bold transition duration-200 ${vista === "insumos" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
-    🌱 Insumos
-  </button>
-  <button onClick={() => setVista("finanzas")}
-    className={`px-6 py-3 rounded-lg font-bold transition duration-200 ${vista === "finanzas" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
-    💰 Finanzas
-  </button>
-</div>
+        <div className="px-4 py-4">
+
+          {/* BOTONES DE NAVEGACIÓN */}
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <button onClick={() => setVista("lecheria")}
+              className={`py-3 rounded-lg font-bold text-sm transition duration-200 ${vista === "lecheria" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+              🥛 Lechería
+            </button>
+            <button onClick={() => setVista("inicio")}
+              className={`py-3 rounded-lg font-bold text-sm transition duration-200 ${vista === "inicio" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+              🐄 Ganado
+            </button>
+            <button onClick={() => setVista("insumos")}
+              className={`py-3 rounded-lg font-bold text-sm transition duration-200 ${vista === "insumos" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+              🌱 Insumos
+            </button>
+            <button onClick={() => setVista("finanzas")}
+              className={`py-3 rounded-lg font-bold text-sm transition duration-200 ${vista === "finanzas" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+              💰 Finanzas
+            </button>
+          </div>
 
           {vista === "inicio" && (
             <div>
-              <div className="mb-6">
+              <div className="mb-4">
                 <input
                   type="text"
-                  placeholder="🔍 Buscar animal por nombre o chapeta..."
+                  placeholder="🔍 Buscar por nombre o chapeta..."
                   value={busqueda}
                   onChange={(e) => setBusqueda(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 bg-white shadow" />
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 bg-white shadow text-base" />
               </div>
-              <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-white rounded-xl shadow p-6 text-center">
-                  <p className="text-gray-500 text-sm">Total Animales</p>
-                  <p className="text-4xl font-bold text-green-700">{animales.length}</p>
+
+              {/* TARJETAS DE RESUMEN — texto adaptable */}
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="bg-white rounded-xl shadow p-3 text-center">
+                  <p className="text-gray-500 text-xs mb-1">Total</p>
+                  <p className="text-2xl font-bold text-green-700">{animales.length}</p>
                 </div>
-                <div className="bg-white rounded-xl shadow p-6 text-center">
-                  <p className="text-gray-500 text-sm">Machos</p>
-                  <p className="text-4xl font-bold text-blue-600">{machos}</p>
+                <div className="bg-white rounded-xl shadow p-3 text-center">
+                  <p className="text-gray-500 text-xs mb-1">Machos</p>
+                  <p className="text-2xl font-bold text-blue-600">{machos}</p>
                 </div>
-                <div className="bg-white rounded-xl shadow p-6 text-center">
-                  <p className="text-gray-500 text-sm">Hembras</p>
-                  <p className="text-4xl font-bold text-pink-600">{hembras}</p>
+                <div className="bg-white rounded-xl shadow p-3 text-center">
+                  <p className="text-gray-500 text-xs mb-1">Hembras</p>
+                  <p className="text-2xl font-bold text-pink-600">{hembras}</p>
                 </div>
               </div>
-              <div className="text-center mb-6">
+
+              <div className="text-center mb-4">
                 <button onClick={() => setMostrarFormAnimal(!mostrarFormAnimal)}
                   className="bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
                   {mostrarFormAnimal ? "Cancelar" : "➕ Agregar Animal"}
                 </button>
               </div>
+
               {mostrarFormAnimal && (
-                <div className="bg-white rounded-xl shadow p-6 mb-6 max-w-lg mx-auto">
-                  <h2 className="text-xl font-bold text-green-700 mb-4">Registrar Nuevo Animal</h2>
+                <div className="bg-white rounded-xl shadow p-4 mb-4 max-w-lg mx-auto">
+                  <h2 className="text-lg font-bold text-green-700 mb-4">Registrar Nuevo Animal</h2>
                   <div className="space-y-3">
                     <input name="nombre" placeholder="Nombre del animal *" value={form.nombre} onChange={handleChange}
                       className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
@@ -483,6 +497,7 @@ function Dashboard({ finca }) {
                   </div>
                 </div>
               )}
+
               {animalesFiltrados.length === 0 ? (
                 <div className="text-center text-gray-400 mt-10">
                   <p className="text-6xl">🐄</p>
@@ -506,17 +521,17 @@ function Dashboard({ finca }) {
                         });
                         setEditandoAnimal(false);
                       }}
-                      className="bg-white rounded-xl shadow p-6 hover:shadow-lg transition duration-200 cursor-pointer hover:border-green-500 border-2 border-transparent">
+                      className="bg-white rounded-xl shadow p-4 hover:shadow-lg transition duration-200 cursor-pointer hover:border-green-500 border-2 border-transparent">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="text-xl font-bold text-green-700">{animal.nombre}</h3>
+                          <h3 className="text-lg font-bold text-green-700">{animal.nombre}</h3>
                           <p className="text-gray-500 text-sm">Chapeta: {animal.chapeta}</p>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${animal.sexo === "Macho" ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"}`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${animal.sexo === "Macho" ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"}`}>
                           {animal.sexo}
                         </span>
                       </div>
-                      <div className="mt-4 space-y-1 text-sm text-gray-600">
+                      <div className="mt-3 space-y-1 text-sm text-gray-600">
                         <p>🎂 Edad: {animal.edad} años</p>
                         <p>⚖️ Peso: {animal.peso} kg</p>
                         <p>🐮 Raza: {animal.raza}</p>
@@ -530,22 +545,14 @@ function Dashboard({ finca }) {
             </div>
           )}
 
-          {vista === "lecheria" && (
-            <div>
-              <Lecheria finca_id={finca?.finca_id} />
-            </div>
-          )}
-
-          {vista === "insumos" && (
-            <div>
-              <Insumos onAgregarInsumo={agregarInsumoConFinanzas} finca_id={finca?.finca_id} />
-            </div>
-          )}
-
+          {vista === "lecheria" && <Lecheria finca_id={finca?.finca_id} />}
+          {vista === "insumos" && <Insumos onAgregarInsumo={agregarInsumoConFinanzas} finca_id={finca?.finca_id} />}
           {vista === "finanzas" && (
-            <div>
-              <Finanzas registrosExternos={registrosFinanzas} onAgregarRegistro={(r) => setRegistrosFinanzas((prev) => [...prev, r])} finca_id={finca?.finca_id} />
-            </div>
+            <Finanzas
+              registrosExternos={registrosFinanzas}
+              onAgregarRegistro={(r) => setRegistrosFinanzas((prev) => [...prev, r])}
+              finca_id={finca?.finca_id}
+            />
           )}
         </div>
       )}
