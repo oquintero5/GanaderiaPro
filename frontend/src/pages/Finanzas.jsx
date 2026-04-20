@@ -66,7 +66,7 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
   return (
     <div>
       {/* Resumen — tarjetas compactas para móvil */}
-      <div className="grid grid-cols-3 gap-2 mb-6">
+      <div className="grid grid-cols-1 gap-2 mb-6">
         <div className="bg-white rounded-xl shadow p-3 text-center">
           <p className="text-gray-500 text-xs mb-1">Ingresos</p>
           <p className="text-lg font-bold text-green-600 leading-tight">
