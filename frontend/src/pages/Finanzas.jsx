@@ -66,24 +66,18 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
   return (
     <div>
       {/* Resumen — tarjetas compactas para móvil */}
-      <div className="grid grid-cols-1 gap-2 mb-6">
-        <div className="bg-white rounded-xl shadow p-3 text-center">
-          <p className="text-gray-500 text-xs mb-1">Ingresos</p>
-          <p className="text-lg font-bold text-green-600 leading-tight">
-            {formatMonto(totalIngresos)}
-          </p>
+      <div className="grid grid-cols-1 gap-3 mb-6">
+        <div className="bg-green-50 border-l-4 border-green-500 rounded-xl shadow p-4 flex justify-between items-center">
+          <p className="text-green-700 font-bold text-base">💰 Total Ingresos</p>
+          <p className="text-green-600 font-bold text-xl">${totalIngresos.toLocaleString()}</p>
         </div>
-        <div className="bg-white rounded-xl shadow p-3 text-center">
-          <p className="text-gray-500 text-xs mb-1">Gastos</p>
-          <p className="text-lg font-bold text-red-500 leading-tight">
-            {formatMonto(totalGastos)}
-          </p>
+        <div className="bg-red-50 border-l-4 border-red-500 rounded-xl shadow p-4 flex justify-between items-center">
+          <p className="text-red-700 font-bold text-base">💸 Total Gastos</p>
+          <p className="text-red-500 font-bold text-xl">${totalGastos.toLocaleString()}</p>
         </div>
-        <div className="bg-white rounded-xl shadow p-3 text-center">
-          <p className="text-gray-500 text-xs mb-1">Balance</p>
-          <p className={`text-lg font-bold leading-tight ${balance >= 0 ? "text-green-600" : "text-red-500"}`}>
-            {formatMonto(balance)}
-          </p>
+        <div className={`${balance >= 0 ? "bg-green-50 border-green-500" : "bg-red-50 border-red-500"} border-l-4 rounded-xl shadow p-4 flex justify-between items-center`}>
+          <p className={`font-bold text-base ${balance >= 0 ? "text-green-700" : "text-red-700"}`}>⚖️ Balance</p>
+          <p className={`font-bold text-xl ${balance >= 0 ? "text-green-600" : "text-red-500"}`}>${balance.toLocaleString()}</p>
         </div>
       </div>
 
@@ -137,8 +131,11 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
             <input name="monto" type="number" placeholder="Monto *" value={form.monto} onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
 
-            <input name="fecha" type="date" value={form.fecha} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+            <div>
+              <label className="block text-gray-700 font-semibold mb-1">Fecha *</label>
+              <input name="fecha" type="date" value={form.fecha} onChange={handleChange}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+            </div>
 
             <button onClick={agregarRegistro}
               className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200">
@@ -169,8 +166,8 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
                   {registro.descripcion && <p className="text-gray-500 text-xs truncate">{registro.descripcion}</p>}
                   <p className="text-gray-400 text-xs">📅 {registro.fecha}</p>
                 </div>
-                <p className={`text-lg font-bold whitespace-nowrap ${registro.tipo === "Ingreso" ? "text-green-600" : "text-red-500"}`}>
-                  {formatMonto(parseFloat(registro.monto))}
+                <p className={`text-base font-bold whitespace-nowrap ${registro.tipo === "Ingreso" ? "text-green-600" : "text-red-500"}`}>
+                  ${parseFloat(registro.monto).toLocaleString()}
                 </p>
               </div>
             </div>
