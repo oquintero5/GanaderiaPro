@@ -94,6 +94,7 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
         <div className="bg-white rounded-xl shadow p-4 mb-4 max-w-lg mx-auto">
           <h2 className="text-lg font-bold text-green-700 mb-4">Nuevo Registro</h2>
           <div className="space-y-3">
+
             <select name="tipo" value={form.tipo} onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500">
               <option value="">Tipo de registro *</option>
@@ -123,6 +124,9 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
                   <option value="Otro Gasto">Otro Gasto</option>
                 </>
               )}
+              {form.tipo === "" && (
+                <option disabled>Selecciona primero el tipo</option>
+              )}
             </select>
 
             <input name="descripcion" placeholder="Descripción" value={form.descripcion} onChange={handleChange}
@@ -131,11 +135,16 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
             <input name="monto" type="number" placeholder="Monto *" value={form.monto} onChange={handleChange}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
 
-            <div>
-              <label className="block text-gray-700 font-semibold mb-1">Fecha *</label>
-              <input name="fecha" type="date" value={form.fecha} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
-            </div>
+            <input
+              name="fecha"
+              type="text"
+              placeholder="Fecha (AAAA-MM-DD) *"
+              value={form.fecha}
+              onFocus={(e) => e.target.type = "date"}
+              onBlur={(e) => { if (!form.fecha) e.target.type = "text" }}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500"
+            />
 
             <button onClick={agregarRegistro}
               className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200">
