@@ -14,17 +14,30 @@ function Login({ onRegister, onLogin }) {
     }
     setCargando(true);
     setError("");
+
+    const timeoutId = setTimeout(() => {
+      setCargando(false);
+      setError("La conexión tardó demasiado. Verifica tu internet e intenta de nuevo.");
+    }, 15000);
+
     try {
       const respuesta = await loginFinca({ nombre: nombreFinca, clave });
+      clearTimeout(timeoutId);
       if (respuesta.finca_id) {
         onLogin({ nombreFinca: respuesta.nombre, finca_id: respuesta.finca_id });
       } else {
         setError(respuesta.detail || "Nombre de finca o clave incorrectos");
       }
     } catch (e) {
-      setError("Error al conectar con el servidor");
+      clearTimeout(timeoutId);
+      setError("Error al conectar con el servidor. Intenta de nuevo.");
+    } finally {
+      setCargando(false);
     }
-    setCargando(false);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") handleLogin();
   };
 
   return (
@@ -34,11 +47,11 @@ function Login({ onRegister, onLogin }) {
         background: "linear-gradient(135deg, #14532d 0%, #166534 40%, #15803d 70%, #4ade80 100%)",
       }}
     >
-      <div className="min-h-screen w-full flex items-center justify-center">
-        <div className="bg-white bg-opacity-95 rounded-2xl shadow-2xl p-10 w-full max-w-md">
-          
+      <div className="min-h-screen w-full flex items-center justify-center px-4">
+        <div className="bg-white bg-opacity-95 rounded-2xl shadow-2xl p-8 w-full max-w-md">
+
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-green-700">🐄 AgroGanaderíaPro</h1>
+            <h1 className="text-3xl font-bold text-green-700">🐄 AgroGanaderíaPro</h1>
             <p className="text-gray-500 mt-2">Gestión integral para tu finca</p>
           </div>
 
@@ -58,7 +71,10 @@ function Login({ onRegister, onLogin }) {
                 placeholder="Ej: Finca La Esperanza"
                 value={nombreFinca}
                 onChange={(e) => setNombreFinca(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500"
+                onKeyDown={handleKeyDown}
+                autoComplete="off"
+                autoCapitalize="none"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 text-base"
               />
             </div>
 
@@ -71,14 +87,16 @@ function Login({ onRegister, onLogin }) {
                 placeholder="Ingresa tu clave"
                 value={clave}
                 onChange={(e) => setClave(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500"
+                onKeyDown={handleKeyDown}
+                autoComplete="current-password"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 text-base"
               />
             </div>
 
             <button
               onClick={handleLogin}
               disabled={cargando}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200 disabled:opacity-50"
+              className="w-full bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold py-3 rounded-lg transition duration-200 disabled:opacity-50 text-base"
             >
               {cargando ? "Ingresando..." : "Ingresar"}
             </button>
