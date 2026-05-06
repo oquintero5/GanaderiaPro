@@ -1,4 +1,4 @@
-const API_URL = "https://agroganaderiapro-api-944496395089.us-central1.run.app";
+const API_URL = "https://ganaderiapro-production.up.railway.app";
 
 // Fincas
 export const registrarFinca = async (datos) => {
