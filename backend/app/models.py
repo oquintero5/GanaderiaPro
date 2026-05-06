@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
@@ -64,7 +64,7 @@ class Finanza(Base):
     monto = Column(Float)
     fecha = Column(String)
     creado_en = Column(DateTime, default=datetime.utcnow)
-    
+
 class RegistroLeche(Base):
     __tablename__ = "registros_leche"
     id = Column(Integer, primary_key=True, index=True)
@@ -74,8 +74,8 @@ class RegistroLeche(Base):
     precio_litro = Column(Float, nullable=False)
     frecuencia_pago = Column(String, default="Mensual")
     creado_en = Column(DateTime, default=datetime.utcnow)
-    
-    class Obrero(Base):
+
+class Obrero(Base):
     __tablename__ = "obreros"
     id = Column(Integer, primary_key=True, index=True)
     finca_id = Column(Integer, ForeignKey("fincas.id"))
@@ -86,4 +86,4 @@ class RegistroLeche(Base):
     fecha = Column(String, nullable=False)
     comentario = Column(String, default="")
     pagado = Column(Boolean, default=False)
-    creado_en = Column(DateTime, default=datetime.utcnow)    
+    creado_en = Column(DateTime, default=datetime.utcnow)
