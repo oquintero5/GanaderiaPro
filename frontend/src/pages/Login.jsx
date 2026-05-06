@@ -98,7 +98,7 @@ function Login({ onRegister, onLogin }) {
         }
 
         .login-tagline span {
-          color: #86efac;
+          color: #fca5a5;
         }
 
         .login-sub {
@@ -151,20 +151,20 @@ function Login({ onRegister, onLogin }) {
         .login-logo-icon {
           width: 42px;
           height: 42px;
-          background: linear-gradient(135deg, #15803d, #4ade80);
+          background: linear-gradient(135deg, #9b2335, #c0392b);
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 22px;
-          box-shadow: 0 4px 16px rgba(21,128,61,0.35);
+          box-shadow: 0 4px 16px rgba(155,35,53,0.35);
         }
 
         .login-logo-text {
           font-family: 'Playfair Display', serif;
           font-size: 20px;
           font-weight: 600;
-          color: #14532d;
+          color: #7f1d1d;
           letter-spacing: -0.3px;
         }
 
@@ -231,8 +231,8 @@ function Login({ onRegister, onLogin }) {
         }
 
         .login-input:focus {
-          border-color: #15803d;
-          box-shadow: 0 0 0 3px rgba(21,128,61,0.1);
+          border-color: #9b2335;
+          box-shadow: 0 0 0 3px rgba(155,35,53,0.1);
         }
 
         .login-input::placeholder {
@@ -255,12 +255,12 @@ function Login({ onRegister, onLogin }) {
           transition: color 0.2s;
         }
 
-        .toggle-pw:hover { color: #15803d; }
+        .toggle-pw:hover { color: #9b2335; }
 
         .login-btn {
           width: 100%;
           padding: 15px;
-          background: linear-gradient(135deg, #15803d, #16a34a);
+          background: linear-gradient(135deg, #9b2335, #c0392b);
           color: white;
           border: none;
           border-radius: 10px;
@@ -273,12 +273,12 @@ function Login({ onRegister, onLogin }) {
           letter-spacing: 0.3px;
           position: relative;
           overflow: hidden;
-          box-shadow: 0 4px 16px rgba(21,128,61,0.3);
+          box-shadow: 0 4px 16px rgba(155,35,53,0.35);
         }
 
         .login-btn:hover:not(:disabled) {
           transform: translateY(-1px);
-          box-shadow: 0 6px 24px rgba(21,128,61,0.4);
+          box-shadow: 0 6px 24px rgba(155,35,53,0.45);
         }
 
         .login-btn:active:not(:disabled) {
@@ -333,8 +333,8 @@ function Login({ onRegister, onLogin }) {
           width: 100%;
           padding: 14px;
           background: transparent;
-          color: #15803d;
-          border: 1.5px solid #d1fae5;
+          color: #9b2335;
+          border: 1.5px solid #fecdd3;
           border-radius: 10px;
           font-size: 14px;
           font-weight: 500;
@@ -345,8 +345,8 @@ function Login({ onRegister, onLogin }) {
         }
 
         .login-register-btn:hover {
-          background: #f0fdf4;
-          border-color: #86efac;
+          background: #fff1f2;
+          border-color: #fca5a5;
         }
 
         .login-footer {
@@ -364,7 +364,7 @@ function Login({ onRegister, onLogin }) {
           position: absolute;
           border-radius: 50%;
           opacity: 0.05;
-          background: #15803d;
+          background: #9b2335;
           pointer-events: none;
         }
 
@@ -409,7 +409,10 @@ function Login({ onRegister, onLogin }) {
 
           <div className="login-logo">
             <div className="login-logo-icon">🐄</div>
-            <span className="login-logo-text">AgroGanaderíaPro</span>
+            <div>
+              <span className="login-logo-text">AgroGanaderíaPro</span>
+              <p style={{ fontSize: 11, color: '#aaa', fontWeight: 300, letterSpacing: '0.5px', marginTop: 2 }}>by Oscar Ortiz</p>
+            </div>
           </div>
 
           <h2 className="login-title">Bienvenido</h2>
