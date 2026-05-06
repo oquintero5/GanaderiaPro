@@ -87,7 +87,7 @@ function Obreros({ finca_id }) {
       {/* Botón agregar */}
       <div className="text-center mb-4">
         <button onClick={() => setMostrarForm(!mostrarForm)}
-          className="bg-red-700 hover:bg-red-800 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
+          className="bg-amber-800 hover:bg-amber-900 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
           {mostrarForm ? "Cancelar" : "➕ Agregar Obrero"}
         </button>
       </div>
@@ -95,22 +95,22 @@ function Obreros({ finca_id }) {
       {/* Formulario */}
       {mostrarForm && (
         <div className="bg-white rounded-xl shadow p-4 mb-4 max-w-lg mx-auto">
-          <h2 className="text-lg font-bold text-red-800 mb-4">Registrar Obrero</h2>
+          <h2 className="text-lg font-bold text-amber-900 mb-4">Registrar Obrero</h2>
           <div className="space-y-3">
 
             <input name="nombre" placeholder="Nombre del obrero *" value={form.nombre} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
 
             <input name="dias_trabajados" type="number" placeholder="Días trabajados *" value={form.dias_trabajados} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
 
             <input name="precio_jornal" type="number" placeholder="Precio del jornal *" value={form.precio_jornal} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
 
             {/* Total calculado automáticamente */}
             {form.dias_trabajados && form.precio_jornal && (
-              <div className="bg-red-50 border border-green-300 rounded-lg px-4 py-3">
-                <p className="text-red-800 font-bold text-center">
+              <div className="bg-amber-50 border border-green-300 rounded-lg px-4 py-3">
+                <p className="text-amber-900 font-bold text-center">
                   Total a pagar: ${totalAPagar().toLocaleString()}
                 </p>
               </div>
@@ -124,14 +124,14 @@ function Obreros({ finca_id }) {
               onFocus={(e) => e.target.type = "date"}
               onBlur={(e) => { if (!form.fecha) e.target.type = "text" }}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700"
             />
 
             <input name="comentario" placeholder="Comentario (opcional)" value={form.comentario} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
 
             <button onClick={agregarObrero}
-              className="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 rounded-lg transition duration-200">
+              className="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 rounded-lg transition duration-200">
               Guardar Obrero
             </button>
           </div>
@@ -149,7 +149,7 @@ function Obreros({ finca_id }) {
         <div className="space-y-3">
           {obreros.map((obrero) => (
             <div key={obrero.id}
-              className={`bg-white rounded-xl shadow p-4 border-l-4 ${obrero.pagado ? "border-red-600" : "border-red-500"}`}>
+              className={`bg-white rounded-xl shadow p-4 border-l-4 ${obrero.pagado ? "border-amber-700" : "border-amber-500"}`}>
               <div className="flex justify-between items-start gap-2">
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-gray-800 text-base">👷 {obrero.nombre}</p>
@@ -161,7 +161,7 @@ function Obreros({ finca_id }) {
                 <div className="flex flex-col items-end gap-2">
                   <button
                     onClick={() => togglePago(obrero)}
-                    className={`px-3 py-2 rounded-lg font-bold text-white text-sm whitespace-nowrap ${obrero.pagado ? "bg-red-600 hover:bg-red-700" : "bg-red-500 hover:bg-red-600"}`}>
+                    className={`px-3 py-2 rounded-lg font-bold text-white text-sm whitespace-nowrap ${obrero.pagado ? "bg-amber-700 hover:bg-amber-800" : "bg-amber-500 hover:bg-amber-700"}`}>
                     {obrero.pagado ? "✅ Pagado" : "❌ Pendiente"}
                   </button>
                 </div>

@@ -60,7 +60,7 @@ function Insumos({ onAgregarInsumo, finca_id }) {
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-white rounded-xl shadow p-6 text-center">
           <p className="text-gray-500 text-sm">Total Insumos</p>
-          <p className="text-4xl font-bold text-red-800">{insumos.length}</p>
+          <p className="text-4xl font-bold text-amber-900">{insumos.length}</p>
         </div>
         <div className="bg-white rounded-xl shadow p-6 text-center">
           <p className="text-gray-500 text-sm">Total Invertido</p>
@@ -71,7 +71,7 @@ function Insumos({ onAgregarInsumo, finca_id }) {
       {/* Botón agregar */}
       <div className="text-center mb-6">
         <button onClick={() => setMostrarForm(!mostrarForm)}
-          className="bg-red-700 hover:bg-red-800 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
+          className="bg-amber-800 hover:bg-amber-900 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
           {mostrarForm ? "Cancelar" : "➕ Agregar Insumo"}
         </button>
       </div>
@@ -79,13 +79,13 @@ function Insumos({ onAgregarInsumo, finca_id }) {
       {/* Formulario */}
       {mostrarForm && (
         <div className="bg-white rounded-xl shadow p-6 mb-6 max-w-lg mx-auto">
-          <h2 className="text-xl font-bold text-red-800 mb-4">Registrar Insumo</h2>
+          <h2 className="text-xl font-bold text-amber-900 mb-4">Registrar Insumo</h2>
           <div className="space-y-3">
             <input name="nombre" placeholder="Nombre del insumo *" value={form.nombre} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
             
             <select name="categoria" value={form.categoria} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600">
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700">
               <option value="">Selecciona Categoría *</option>
               <option value="Sal Mineral">Sal Mineral</option>
               <option value="Vitamina">Vitamina</option>
@@ -99,9 +99,9 @@ function Insumos({ onAgregarInsumo, finca_id }) {
 
             <div className="grid grid-cols-2 gap-3">
               <input name="cantidad" type="number" placeholder="Cantidad *" value={form.cantidad} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
               <select name="unidad" value={form.unidad} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600">
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700">
                 <option value="">Unidad</option>
                 <option value="kg">kg</option>
                 <option value="litros">litros</option>
@@ -112,13 +112,13 @@ function Insumos({ onAgregarInsumo, finca_id }) {
             </div>
 
             <input name="precio" type="number" placeholder="Precio unitario *" value={form.precio} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
 
             <input name="proveedor" placeholder="Proveedor" value={form.proveedor} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
 
             <button onClick={agregarInsumo}
-              className="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 rounded-lg transition duration-200">
+              className="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 rounded-lg transition duration-200">
               Guardar Insumo
             </button>
           </div>
@@ -137,8 +137,8 @@ function Insumos({ onAgregarInsumo, finca_id }) {
           {insumos.map((insumo) => (
             <div key={insumo.id} className="bg-white rounded-xl shadow p-6 hover:shadow-lg transition duration-200">
               <div className="flex justify-between items-start">
-                <h3 className="text-xl font-bold text-red-800">{insumo.nombre}</h3>
-                <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
+                <h3 className="text-xl font-bold text-amber-900">{insumo.nombre}</h3>
+                <span className="bg-amber-100 text-amber-900 px-3 py-1 rounded-full text-sm font-semibold">
                   {insumo.categoria}
                 </span>
               </div>

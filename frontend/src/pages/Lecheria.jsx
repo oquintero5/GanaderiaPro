@@ -67,7 +67,7 @@ function Lecheria({ finca_id }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl shadow p-4 text-center">
           <p className="text-gray-500 text-sm">Total Litros</p>
-          <p className="text-3xl font-bold text-red-800">{totalLitros.toFixed(1)}</p>
+          <p className="text-3xl font-bold text-amber-900">{totalLitros.toFixed(1)}</p>
           <p className="text-gray-400 text-xs">litros</p>
         </div>
         <div className="bg-white rounded-xl shadow p-4 text-center">
@@ -77,7 +77,7 @@ function Lecheria({ finca_id }) {
         </div>
         <div className="bg-white rounded-xl shadow p-4 text-center">
           <p className="text-gray-500 text-sm">Total Ingresos</p>
-          <p className="text-2xl font-bold text-red-700">${totalIngresos.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-amber-800">${totalIngresos.toLocaleString()}</p>
           <p className="text-gray-400 text-xs">acumulado</p>
         </div>
         <div className="bg-white rounded-xl shadow p-4 text-center">
@@ -88,20 +88,20 @@ function Lecheria({ finca_id }) {
       </div>
 
       {registros.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-          <h3 className="font-bold text-red-800 mb-3">💵 Pago Estimado por Frecuencia</h3>
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+          <h3 className="font-bold text-amber-900 mb-3">💵 Pago Estimado por Frecuencia</h3>
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-white rounded-lg p-3 text-center">
               <p className="text-gray-500 text-xs">Semanal</p>
-              <p className="text-lg font-bold text-red-700">${(totalIngresos / (registros.length / 7)).toFixed(0)}</p>
+              <p className="text-lg font-bold text-amber-800">${(totalIngresos / (registros.length / 7)).toFixed(0)}</p>
             </div>
             <div className="bg-white rounded-lg p-3 text-center">
               <p className="text-gray-500 text-xs">Quincenal</p>
-              <p className="text-lg font-bold text-red-700">${(totalIngresos / (registros.length / 15)).toFixed(0)}</p>
+              <p className="text-lg font-bold text-amber-800">${(totalIngresos / (registros.length / 15)).toFixed(0)}</p>
             </div>
             <div className="bg-white rounded-lg p-3 text-center">
               <p className="text-gray-500 text-xs">Mensual</p>
-              <p className="text-lg font-bold text-red-700">${(totalIngresos / (registros.length / 30)).toFixed(0)}</p>
+              <p className="text-lg font-bold text-amber-800">${(totalIngresos / (registros.length / 30)).toFixed(0)}</p>
             </div>
           </div>
         </div>
@@ -109,41 +109,41 @@ function Lecheria({ finca_id }) {
 
       <div className="text-center mb-6">
         <button onClick={() => setMostrarForm(!mostrarForm)}
-          className="bg-red-700 hover:bg-red-800 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
+          className="bg-amber-800 hover:bg-amber-900 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
           {mostrarForm ? "Cancelar" : "➕ Registrar Producción del Día"}
         </button>
       </div>
 
       {mostrarForm && (
         <div className="bg-white rounded-xl shadow p-6 mb-6 max-w-lg mx-auto">
-          <h2 className="text-xl font-bold text-red-800 mb-4">🥛 Registro Diario de Leche</h2>
+          <h2 className="text-xl font-bold text-amber-900 mb-4">🥛 Registro Diario de Leche</h2>
           <div className="space-y-3">
             <div>
               <label className="block text-gray-700 font-semibold mb-1">Fecha *</label>
               <input type="date" name="fecha" value={form.fecha} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
             </div>
             <div>
               <label className="block text-gray-700 font-semibold mb-1">Litros producidos *</label>
               <input type="number" name="litros" placeholder="Ej: 25.5" value={form.litros} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
             </div>
             <div>
               <label className="block text-gray-700 font-semibold mb-1">Precio por litro *</label>
               <input type="number" name="precioLitro" placeholder="Ej: 1200" value={form.precioLitro} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
             </div>
             <div>
               <label className="block text-gray-700 font-semibold mb-1">Frecuencia de pago</label>
               <select name="frecuenciaPago" value={form.frecuenciaPago} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600">
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700">
                 <option value="Semanal">Semanal</option>
                 <option value="Quincenal">Quincenal</option>
                 <option value="Mensual">Mensual</option>
               </select>
             </div>
             <button onClick={agregarRegistro}
-              className="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 rounded-lg transition duration-200">
+              className="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 rounded-lg transition duration-200">
               💾 Guardar Registro
             </button>
           </div>
@@ -157,7 +157,7 @@ function Lecheria({ finca_id }) {
             {Object.entries(registrosPorMes).sort().reverse().map(([mes, datos]) => (
               <div key={mes} className="bg-white rounded-xl shadow p-4">
                 <div className="flex justify-between items-center">
-                  <h4 className="font-bold text-red-800">{mes}</h4>
+                  <h4 className="font-bold text-amber-900">{mes}</h4>
                   <span className="text-gray-500 text-sm">{datos.dias} días registrados</span>
                 </div>
                 <div className="grid grid-cols-3 gap-3 mt-3">
@@ -171,7 +171,7 @@ function Lecheria({ finca_id }) {
                   </div>
                   <div className="text-center">
                     <p className="text-gray-500 text-xs">Ingresos</p>
-                    <p className="font-bold text-red-700">${datos.ingresos.toLocaleString()}</p>
+                    <p className="font-bold text-amber-800">${datos.ingresos.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
@@ -198,7 +198,7 @@ function Lecheria({ finca_id }) {
               </div>
               <div className="text-right">
                 <p className="text-2xl font-bold text-blue-600">{parseFloat(registro.litros).toFixed(1)} L</p>
-                <p className="text-red-700 font-semibold">${(parseFloat(registro.litros) * parseFloat(registro.precio_litro)).toLocaleString()}</p>
+                <p className="text-amber-800 font-semibold">${(parseFloat(registro.litros) * parseFloat(registro.precio_litro)).toLocaleString()}</p>
               </div>
             </div>
           ))}

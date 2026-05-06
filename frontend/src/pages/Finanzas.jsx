@@ -67,24 +67,24 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
     <div>
       {/* Resumen — tarjetas compactas para móvil */}
       <div className="grid grid-cols-1 gap-3 mb-6">
-        <div className="bg-red-50 border-l-4 border-red-600 rounded-xl shadow p-4 flex justify-between items-center">
-          <p className="text-red-800 font-bold text-base">💰 Total Ingresos</p>
-          <p className="text-red-700 font-bold text-xl">${totalIngresos.toLocaleString()}</p>
+        <div className="bg-amber-50 border-l-4 border-amber-700 rounded-xl shadow p-4 flex justify-between items-center">
+          <p className="text-amber-900 font-bold text-base">💰 Total Ingresos</p>
+          <p className="text-amber-800 font-bold text-xl">${totalIngresos.toLocaleString()}</p>
         </div>
-        <div className="bg-red-50 border-l-4 border-red-500 rounded-xl shadow p-4 flex justify-between items-center">
-          <p className="text-red-700 font-bold text-base">💸 Total Gastos</p>
-          <p className="text-red-500 font-bold text-xl">${totalGastos.toLocaleString()}</p>
+        <div className="bg-amber-50 border-l-4 border-amber-500 rounded-xl shadow p-4 flex justify-between items-center">
+          <p className="text-amber-800 font-bold text-base">💸 Total Gastos</p>
+          <p className="text-amber-500 font-bold text-xl">${totalGastos.toLocaleString()}</p>
         </div>
-        <div className={`${balance >= 0 ? "bg-red-50 border-red-600" : "bg-red-50 border-red-500"} border-l-4 rounded-xl shadow p-4 flex justify-between items-center`}>
-          <p className={`font-bold text-base ${balance >= 0 ? "text-red-800" : "text-red-700"}`}>⚖️ Balance</p>
-          <p className={`font-bold text-xl ${balance >= 0 ? "text-red-700" : "text-red-500"}`}>${balance.toLocaleString()}</p>
+        <div className={`${balance >= 0 ? "bg-amber-50 border-amber-700" : "bg-amber-50 border-amber-500"} border-l-4 rounded-xl shadow p-4 flex justify-between items-center`}>
+          <p className={`font-bold text-base ${balance >= 0 ? "text-amber-900" : "text-amber-800"}`}>⚖️ Balance</p>
+          <p className={`font-bold text-xl ${balance >= 0 ? "text-amber-800" : "text-amber-500"}`}>${balance.toLocaleString()}</p>
         </div>
       </div>
 
       {/* Botón agregar */}
       <div className="text-center mb-4">
         <button onClick={() => setMostrarForm(!mostrarForm)}
-          className="bg-red-700 hover:bg-red-800 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
+          className="bg-amber-800 hover:bg-amber-900 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
           {mostrarForm ? "Cancelar" : "➕ Agregar Registro"}
         </button>
       </div>
@@ -92,18 +92,18 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
       {/* Formulario */}
       {mostrarForm && (
         <div className="bg-white rounded-xl shadow p-4 mb-4 max-w-lg mx-auto">
-          <h2 className="text-lg font-bold text-red-800 mb-4">Nuevo Registro</h2>
+          <h2 className="text-lg font-bold text-amber-900 mb-4">Nuevo Registro</h2>
           <div className="space-y-3">
 
             <select name="tipo" value={form.tipo} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600">
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700">
               <option value="">Tipo de registro *</option>
               <option value="Ingreso">💰 Ingreso</option>
               <option value="Gasto">💸 Gasto</option>
             </select>
 
             <select name="categoria" value={form.categoria} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600">
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700">
               <option value="">Categoría *</option>
               {form.tipo === "Ingreso" && (
                 <>
@@ -130,10 +130,10 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
             </select>
 
             <input name="descripcion" placeholder="Descripción" value={form.descripcion} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
 
             <input name="monto" type="number" placeholder="Monto *" value={form.monto} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
 
             <input
               name="fecha"
@@ -143,11 +143,11 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
               onFocus={(e) => e.target.type = "date"}
               onBlur={(e) => { if (!form.fecha) e.target.type = "text" }}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700"
             />
 
             <button onClick={agregarRegistro}
-              className="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 rounded-lg transition duration-200">
+              className="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 rounded-lg transition duration-200">
               Guardar Registro
             </button>
           </div>
@@ -165,17 +165,17 @@ function Finanzas({ registrosExternos = [], onAgregarRegistro, finca_id }) {
         <div className="space-y-3">
           {registros.map((registro) => (
             <div key={registro.id}
-              className={`bg-white rounded-xl shadow p-4 border-l-4 ${registro.tipo === "Ingreso" ? "border-red-600" : "border-red-500"}`}>
+              className={`bg-white rounded-xl shadow p-4 border-l-4 ${registro.tipo === "Ingreso" ? "border-amber-700" : "border-amber-500"}`}>
               <div className="flex justify-between items-center gap-2">
                 <div className="flex-1 min-w-0">
-                  <span className={`font-bold text-xs px-2 py-1 rounded-full ${registro.tipo === "Ingreso" ? "bg-red-100 text-red-800" : "bg-red-100 text-red-600"}`}>
+                  <span className={`font-bold text-xs px-2 py-1 rounded-full ${registro.tipo === "Ingreso" ? "bg-amber-100 text-amber-900" : "bg-amber-100 text-amber-700"}`}>
                     {registro.tipo === "Ingreso" ? "💰" : "💸"} {registro.tipo}
                   </span>
                   <p className="font-bold text-gray-800 mt-1 text-sm">{registro.categoria}</p>
                   {registro.descripcion && <p className="text-gray-500 text-xs truncate">{registro.descripcion}</p>}
                   <p className="text-gray-400 text-xs">📅 {registro.fecha}</p>
                 </div>
-                <p className={`text-base font-bold whitespace-nowrap ${registro.tipo === "Ingreso" ? "text-red-700" : "text-red-500"}`}>
+                <p className={`text-base font-bold whitespace-nowrap ${registro.tipo === "Ingreso" ? "text-amber-800" : "text-amber-500"}`}>
                   ${parseFloat(registro.monto).toLocaleString()}
                 </p>
               </div>
