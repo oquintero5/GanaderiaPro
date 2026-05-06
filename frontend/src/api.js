@@ -1,4 +1,4 @@
-const API_URL = "https://ganaderiapro-production.up.railway.app";
+const API_URL = import.meta.env.VITE_API_URL || "https://ganaderiapro-production.up.railway.app";
 
 // Fincas
 export const registrarFinca = async (datos) => {
