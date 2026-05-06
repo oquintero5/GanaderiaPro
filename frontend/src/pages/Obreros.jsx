@@ -1,17 +1,25 @@
 import { useState, useEffect } from "react";
 import { listarObreros, crearObrero, actualizarPagoObrero } from "../api";
 
+const GRAD = "linear-gradient(135deg, #fcd34d, #b91c1c)";
+const inputClass = "w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-400";
+const API_URL = import.meta.env.VITE_API_URL || "https://ganaderiapro-production.up.railway.app";
+
+async function actualizarObrero(id, datos) {
+  const res = await fetch(`${API_URL}/obreros/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos),
+  });
+  return res.json();
+}
+
 function Obreros({ finca_id }) {
   const [obreros, setObreros] = useState([]);
   const [mostrarForm, setMostrarForm] = useState(false);
-  const [form, setForm] = useState({
-    nombre: "",
-    dias_trabajados: "",
-    precio_jornal: "",
-    fecha: "",
-    comentario: "",
-    pagado: false,
-  });
+  const [editandoId, setEditandoId] = useState(null);
+  const [formEditar, setFormEditar] = useState({});
+  const [form, setForm] = useState({ nombre: "", dias_trabajados: "", precio_jornal: "", fecha: "", comentario: "", pagado: false });
 
   useEffect(() => {
     if (finca_id) cargarObreros();
@@ -26,15 +34,10 @@ function Obreros({ finca_id }) {
     }
   };
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const totalAPagar = () => {
-    const dias = parseFloat(form.dias_trabajados || 0);
-    const jornal = parseFloat(form.precio_jornal || 0);
-    return dias * jornal;
-  };
+  const totalAPagar = () => parseFloat(form.dias_trabajados || 0) * parseFloat(form.precio_jornal || 0);
+  const totalEditarAPagar = () => parseFloat(formEditar.dias_trabajados || 0) * parseFloat(formEditar.precio_jornal || 0);
 
   const agregarObrero = async () => {
     if (!form.nombre || !form.dias_trabajados || !form.precio_jornal || !form.fecha) {
@@ -42,22 +45,33 @@ function Obreros({ finca_id }) {
       return;
     }
     try {
-      await crearObrero({
-        finca_id,
-        nombre: form.nombre,
-        dias_trabajados: parseFloat(form.dias_trabajados),
-        precio_jornal: parseFloat(form.precio_jornal),
-        total_pagar: totalAPagar(),
-        fecha: form.fecha,
-        comentario: form.comentario,
-        pagado: false,
-      });
+      await crearObrero({ finca_id, nombre: form.nombre, dias_trabajados: parseFloat(form.dias_trabajados), precio_jornal: parseFloat(form.precio_jornal), total_pagar: totalAPagar(), fecha: form.fecha, comentario: form.comentario, pagado: false });
       await cargarObreros();
       setForm({ nombre: "", dias_trabajados: "", precio_jornal: "", fecha: "", comentario: "", pagado: false });
       setMostrarForm(false);
       alert("¡Obrero registrado exitosamente!");
     } catch (e) {
       alert("Error al guardar el obrero");
+    }
+  };
+
+  const guardarEdicion = async (obrero) => {
+    try {
+      await actualizarObrero(obrero.id, {
+        finca_id,
+        nombre: formEditar.nombre,
+        dias_trabajados: parseFloat(formEditar.dias_trabajados),
+        precio_jornal: parseFloat(formEditar.precio_jornal),
+        total_pagar: totalEditarAPagar(),
+        fecha: formEditar.fecha,
+        comentario: formEditar.comentario || "",
+        pagado: obrero.pagado,
+      });
+      await cargarObreros();
+      setEditandoId(null);
+      alert("¡Obrero actualizado!");
+    } catch (e) {
+      alert("Error al actualizar el obrero");
     }
   };
 
@@ -70,9 +84,7 @@ function Obreros({ finca_id }) {
     }
   };
 
-  const totalPendiente = obreros
-    .filter((o) => !o.pagado)
-    .reduce((acc, o) => acc + parseFloat(o.total_pagar || 0), 0);
+  const totalPendiente = obreros.filter(o => !o.pagado).reduce((acc, o) => acc + parseFloat(o.total_pagar || 0), 0);
 
   return (
     <div>
@@ -85,60 +97,37 @@ function Obreros({ finca_id }) {
       </div>
 
       {/* Botón agregar */}
-      <div className="text-center mb-4">
+      <div className="flex justify-center mb-4">
         <button onClick={() => setMostrarForm(!mostrarForm)}
-          className="bg-amber-800 hover:bg-amber-900 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
+          style={{ background: GRAD }}
+          className="text-white font-bold px-8 py-3 rounded-lg shadow-md">
           {mostrarForm ? "Cancelar" : "➕ Agregar Obrero"}
         </button>
       </div>
 
-      {/* Formulario */}
+      {/* Formulario nuevo */}
       {mostrarForm && (
         <div className="bg-white rounded-xl shadow p-4 mb-4 max-w-lg mx-auto">
-          <h2 className="text-lg font-bold text-amber-900 mb-4">Registrar Obrero</h2>
+          <h2 className="text-lg font-bold mb-4" style={{ color: "#b91c1c" }}>Registrar Obrero</h2>
           <div className="space-y-3">
-
-            <input name="nombre" placeholder="Nombre del obrero *" value={form.nombre} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-
-            <input name="dias_trabajados" type="number" placeholder="Días trabajados *" value={form.dias_trabajados} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-
-            <input name="precio_jornal" type="number" placeholder="Precio del jornal *" value={form.precio_jornal} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-
-            {/* Total calculado automáticamente */}
+            <input name="nombre" placeholder="Nombre del obrero *" value={form.nombre} onChange={handleChange} className={inputClass} />
+            <input name="dias_trabajados" type="number" placeholder="Días trabajados *" value={form.dias_trabajados} onChange={handleChange} className={inputClass} />
+            <input name="precio_jornal" type="number" placeholder="Precio del jornal *" value={form.precio_jornal} onChange={handleChange} className={inputClass} />
             {form.dias_trabajados && form.precio_jornal && (
-              <div className="bg-amber-50 border border-green-300 rounded-lg px-4 py-3">
-                <p className="text-amber-900 font-bold text-center">
-                  Total a pagar: ${totalAPagar().toLocaleString()}
-                </p>
+              <div className="bg-amber-50 border border-amber-300 rounded-lg px-4 py-3">
+                <p className="text-amber-900 font-bold text-center">Total a pagar: ${totalAPagar().toLocaleString()}</p>
               </div>
             )}
-
-            <input
-              name="fecha"
-              type="text"
-              placeholder="Fecha (AAAA-MM-DD) *"
-              value={form.fecha}
-              onFocus={(e) => e.target.type = "date"}
-              onBlur={(e) => { if (!form.fecha) e.target.type = "text" }}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700"
-            />
-
-            <input name="comentario" placeholder="Comentario (opcional)" value={form.comentario} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-
-            <button onClick={agregarObrero}
-              className="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 rounded-lg transition duration-200">
+            <input name="fecha" type="date" value={form.fecha} onChange={handleChange} className={inputClass} />
+            <input name="comentario" placeholder="Comentario (opcional)" value={form.comentario} onChange={handleChange} className={inputClass} />
+            <button onClick={agregarObrero} style={{ background: GRAD }} className="w-full text-white font-bold py-3 rounded-lg shadow-md">
               Guardar Obrero
             </button>
           </div>
         </div>
       )}
 
-      {/* Lista de obreros */}
+      {/* Lista */}
       {obreros.length === 0 ? (
         <div className="text-center text-gray-400 mt-10">
           <p className="text-6xl">👷</p>
@@ -149,23 +138,52 @@ function Obreros({ finca_id }) {
         <div className="space-y-3">
           {obreros.map((obrero) => (
             <div key={obrero.id}
-              className={`bg-white rounded-xl shadow p-4 border-l-4 ${obrero.pagado ? "border-amber-700" : "border-amber-500"}`}>
-              <div className="flex justify-between items-start gap-2">
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-gray-800 text-base">👷 {obrero.nombre}</p>
-                  <p className="text-gray-500 text-sm">📅 {obrero.fecha}</p>
-                  <p className="text-gray-500 text-sm">🗓 {obrero.dias_trabajados} días × ${parseFloat(obrero.precio_jornal).toLocaleString()}</p>
-                  <p className="font-bold text-gray-700 text-sm mt-1">Total: ${parseFloat(obrero.total_pagar).toLocaleString()}</p>
-                  {obrero.comentario && <p className="text-gray-400 text-xs mt-1">💬 {obrero.comentario}</p>}
+              className={`bg-white rounded-xl shadow p-4 border-l-4 ${obrero.pagado ? "border-amber-700" : "border-red-400"}`}>
+              {editandoId === obrero.id ? (
+                <div className="space-y-2">
+                  <input placeholder="Nombre *" value={formEditar.nombre}
+                    onChange={(e) => setFormEditar({ ...formEditar, nombre: e.target.value })} className={inputClass} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input type="number" placeholder="Días trabajados" value={formEditar.dias_trabajados}
+                      onChange={(e) => setFormEditar({ ...formEditar, dias_trabajados: e.target.value })} className={inputClass} />
+                    <input type="number" placeholder="Precio jornal" value={formEditar.precio_jornal}
+                      onChange={(e) => setFormEditar({ ...formEditar, precio_jornal: e.target.value })} className={inputClass} />
+                  </div>
+                  {formEditar.dias_trabajados && formEditar.precio_jornal && (
+                    <div className="bg-amber-50 border border-amber-300 rounded-lg px-4 py-2">
+                      <p className="text-amber-900 font-bold text-center text-sm">Total: ${totalEditarAPagar().toLocaleString()}</p>
+                    </div>
+                  )}
+                  <input type="date" value={formEditar.fecha}
+                    onChange={(e) => setFormEditar({ ...formEditar, fecha: e.target.value })} className={inputClass} />
+                  <input placeholder="Comentario" value={formEditar.comentario || ""}
+                    onChange={(e) => setFormEditar({ ...formEditar, comentario: e.target.value })} className={inputClass} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => guardarEdicion(obrero)} style={{ background: GRAD }}
+                      className="text-white font-bold py-2 rounded-lg text-sm">💾 Guardar</button>
+                    <button onClick={() => setEditandoId(null)}
+                      className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 rounded-lg text-sm">Cancelar</button>
+                  </div>
                 </div>
-                <div className="flex flex-col items-end gap-2">
-                  <button
-                    onClick={() => togglePago(obrero)}
-                    className={`px-3 py-2 rounded-lg font-bold text-white text-sm whitespace-nowrap ${obrero.pagado ? "bg-amber-700 hover:bg-amber-800" : "bg-amber-500 hover:bg-amber-700"}`}>
-                    {obrero.pagado ? "✅ Pagado" : "❌ Pendiente"}
-                  </button>
+              ) : (
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-800 text-base">👷 {obrero.nombre}</p>
+                    <p className="text-gray-500 text-sm">📅 {obrero.fecha}</p>
+                    <p className="text-gray-500 text-sm">🗓 {obrero.dias_trabajados} días × ${parseFloat(obrero.precio_jornal).toLocaleString()}</p>
+                    <p className="font-bold text-gray-700 text-sm mt-1">Total: ${parseFloat(obrero.total_pagar).toLocaleString()}</p>
+                    {obrero.comentario && <p className="text-gray-400 text-xs mt-1">💬 {obrero.comentario}</p>}
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <button onClick={() => togglePago(obrero)}
+                      className={`px-3 py-2 rounded-lg font-bold text-white text-sm whitespace-nowrap ${obrero.pagado ? "bg-amber-700 hover:bg-amber-800" : "bg-red-500 hover:bg-red-600"}`}>
+                      {obrero.pagado ? "✅ Pagado" : "❌ Pendiente"}
+                    </button>
+                    <button onClick={() => { setEditandoId(obrero.id); setFormEditar({ nombre: obrero.nombre, dias_trabajados: obrero.dias_trabajados, precio_jornal: obrero.precio_jornal, fecha: obrero.fecha, comentario: obrero.comentario || "" }); }}
+                      className="text-yellow-600 hover:text-yellow-700 font-semibold text-sm">✏️ Editar</button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ))}
         </div>

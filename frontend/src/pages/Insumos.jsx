@@ -1,8 +1,28 @@
 import { useState, useEffect } from "react";
 import { listarInsumos, crearInsumo } from "../api";
 
+const GRAD = "linear-gradient(135deg, #fcd34d, #b91c1c)";
+const inputClass = "w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-400";
+const API_URL = import.meta.env.VITE_API_URL || "https://ganaderiapro-production.up.railway.app";
+
+async function actualizarInsumo(id, datos) {
+  const res = await fetch(`${API_URL}/insumos/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos),
+  });
+  return res.json();
+}
+
+const CATEGORIAS = ["Sal Mineral","Vitamina","Vacuna","Purga","Medicamento","Concentrado","Herramienta","Otro"];
+const UNIDADES = ["kg","litros","unidades","bultos","cajas"];
+
 function Insumos({ onAgregarInsumo, finca_id }) {
   const [insumos, setInsumos] = useState([]);
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [editandoId, setEditandoId] = useState(null);
+  const [formEditar, setFormEditar] = useState({});
+  const [form, setForm] = useState({ nombre: "", categoria: "", cantidad: "", unidad: "", precio: "", proveedor: "" });
 
   useEffect(() => {
     if (finca_id) cargarInsumos();
@@ -12,19 +32,8 @@ function Insumos({ onAgregarInsumo, finca_id }) {
     const data = await listarInsumos(finca_id);
     if (Array.isArray(data)) setInsumos(data);
   };
-  const [mostrarForm, setMostrarForm] = useState(false);
-  const [form, setForm] = useState({
-    nombre: "",
-    categoria: "",
-    cantidad: "",
-    unidad: "",
-    precio: "",
-    proveedor: "",
-  });
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const agregarInsumo = async () => {
     if (!form.nombre || !form.categoria || !form.cantidad || !form.precio) {
@@ -33,15 +42,7 @@ function Insumos({ onAgregarInsumo, finca_id }) {
     }
     try {
       const nuevoInsumo = { ...form, finca_id };
-      await crearInsumo({
-        finca_id,
-        nombre: form.nombre,
-        categoria: form.categoria,
-        cantidad: parseFloat(form.cantidad),
-        unidad: form.unidad,
-        precio: parseFloat(form.precio),
-        proveedor: form.proveedor,
-      });
+      await crearInsumo({ finca_id, nombre: form.nombre, categoria: form.categoria, cantidad: parseFloat(form.cantidad), unidad: form.unidad, precio: parseFloat(form.precio), proveedor: form.proveedor });
       if (onAgregarInsumo) onAgregarInsumo(nuevoInsumo);
       await cargarInsumos();
       setForm({ nombre: "", categoria: "", cantidad: "", unidad: "", precio: "", proveedor: "" });
@@ -49,6 +50,25 @@ function Insumos({ onAgregarInsumo, finca_id }) {
       alert("¡Insumo agregado exitosamente!");
     } catch (e) {
       alert("Error al guardar el insumo");
+    }
+  };
+
+  const guardarEdicion = async (insumo) => {
+    try {
+      await actualizarInsumo(insumo.id, {
+        finca_id,
+        nombre: formEditar.nombre,
+        categoria: formEditar.categoria,
+        cantidad: parseFloat(formEditar.cantidad),
+        unidad: formEditar.unidad,
+        precio: parseFloat(formEditar.precio),
+        proveedor: formEditar.proveedor || "",
+      });
+      await cargarInsumos();
+      setEditandoId(null);
+      alert("¡Insumo actualizado!");
+    } catch (e) {
+      alert("Error al actualizar el insumo");
     }
   };
 
@@ -60,7 +80,7 @@ function Insumos({ onAgregarInsumo, finca_id }) {
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-white rounded-xl shadow p-6 text-center">
           <p className="text-gray-500 text-sm">Total Insumos</p>
-          <p className="text-4xl font-bold text-amber-900">{insumos.length}</p>
+          <p className="text-4xl font-bold" style={{ color: "#b91c1c" }}>{insumos.length}</p>
         </div>
         <div className="bg-white rounded-xl shadow p-6 text-center">
           <p className="text-gray-500 text-sm">Total Invertido</p>
@@ -69,63 +89,41 @@ function Insumos({ onAgregarInsumo, finca_id }) {
       </div>
 
       {/* Botón agregar */}
-      <div className="text-center mb-6">
+      <div className="flex justify-center mb-6">
         <button onClick={() => setMostrarForm(!mostrarForm)}
-          className="bg-amber-800 hover:bg-amber-900 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
+          style={{ background: GRAD }}
+          className="text-white font-bold px-8 py-3 rounded-lg shadow-md">
           {mostrarForm ? "Cancelar" : "➕ Agregar Insumo"}
         </button>
       </div>
 
-      {/* Formulario */}
+      {/* Formulario nuevo */}
       {mostrarForm && (
         <div className="bg-white rounded-xl shadow p-6 mb-6 max-w-lg mx-auto">
-          <h2 className="text-xl font-bold text-amber-900 mb-4">Registrar Insumo</h2>
+          <h2 className="text-xl font-bold mb-4" style={{ color: "#b91c1c" }}>Registrar Insumo</h2>
           <div className="space-y-3">
-            <input name="nombre" placeholder="Nombre del insumo *" value={form.nombre} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-            
-            <select name="categoria" value={form.categoria} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700">
+            <input name="nombre" placeholder="Nombre del insumo *" value={form.nombre} onChange={handleChange} className={inputClass} />
+            <select name="categoria" value={form.categoria} onChange={handleChange} className={inputClass}>
               <option value="">Selecciona Categoría *</option>
-              <option value="Sal Mineral">Sal Mineral</option>
-              <option value="Vitamina">Vitamina</option>
-              <option value="Vacuna">Vacuna</option>
-              <option value="Purga">Purga</option>
-              <option value="Medicamento">Medicamento</option>
-              <option value="Concentrado">Concentrado</option>
-              <option value="Herramienta">Herramienta</option>
-              <option value="Otro">Otro</option>
+              {CATEGORIAS.map(c => <option key={c}>{c}</option>)}
             </select>
-
             <div className="grid grid-cols-2 gap-3">
-              <input name="cantidad" type="number" placeholder="Cantidad *" value={form.cantidad} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-              <select name="unidad" value={form.unidad} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700">
+              <input name="cantidad" type="number" placeholder="Cantidad *" value={form.cantidad} onChange={handleChange} className={inputClass} />
+              <select name="unidad" value={form.unidad} onChange={handleChange} className={inputClass}>
                 <option value="">Unidad</option>
-                <option value="kg">kg</option>
-                <option value="litros">litros</option>
-                <option value="unidades">unidades</option>
-                <option value="bultos">bultos</option>
-                <option value="cajas">cajas</option>
+                {UNIDADES.map(u => <option key={u}>{u}</option>)}
               </select>
             </div>
-
-            <input name="precio" type="number" placeholder="Precio unitario *" value={form.precio} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-
-            <input name="proveedor" placeholder="Proveedor" value={form.proveedor} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-
-            <button onClick={agregarInsumo}
-              className="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 rounded-lg transition duration-200">
+            <input name="precio" type="number" placeholder="Precio unitario *" value={form.precio} onChange={handleChange} className={inputClass} />
+            <input name="proveedor" placeholder="Proveedor" value={form.proveedor} onChange={handleChange} className={inputClass} />
+            <button onClick={agregarInsumo} style={{ background: GRAD }} className="w-full text-white font-bold py-3 rounded-lg shadow-md">
               Guardar Insumo
             </button>
           </div>
         </div>
       )}
 
-      {/* Lista de insumos */}
+      {/* Lista */}
       {insumos.length === 0 ? (
         <div className="text-center text-gray-400 mt-10">
           <p className="text-6xl">🌱</p>
@@ -135,19 +133,52 @@ function Insumos({ onAgregarInsumo, finca_id }) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {insumos.map((insumo) => (
-            <div key={insumo.id} className="bg-white rounded-xl shadow p-6 hover:shadow-lg transition duration-200">
-              <div className="flex justify-between items-start">
-                <h3 className="text-xl font-bold text-amber-900">{insumo.nombre}</h3>
-                <span className="bg-amber-100 text-amber-900 px-3 py-1 rounded-full text-sm font-semibold">
-                  {insumo.categoria}
-                </span>
-              </div>
-              <div className="mt-4 space-y-1 text-sm text-gray-600">
-                <p>📦 Cantidad: {insumo.cantidad} {insumo.unidad}</p>
-                <p>💰 Precio: ${parseFloat(insumo.precio).toLocaleString()}</p>
-                <p>💵 Total: ${(parseFloat(insumo.precio) * parseFloat(insumo.cantidad)).toLocaleString()}</p>
-                {insumo.proveedor && <p>🏪 Proveedor: {insumo.proveedor}</p>}
-              </div>
+            <div key={insumo.id} className="bg-white rounded-xl shadow p-4 border-l-4 hover:shadow-lg transition duration-200" style={{ borderColor: "#b91c1c" }}>
+              {editandoId === insumo.id ? (
+                <div className="space-y-2">
+                  <input placeholder="Nombre *" value={formEditar.nombre}
+                    onChange={(e) => setFormEditar({ ...formEditar, nombre: e.target.value })} className={inputClass} />
+                  <select value={formEditar.categoria}
+                    onChange={(e) => setFormEditar({ ...formEditar, categoria: e.target.value })} className={inputClass}>
+                    {CATEGORIAS.map(c => <option key={c}>{c}</option>)}
+                  </select>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input type="number" placeholder="Cantidad" value={formEditar.cantidad}
+                      onChange={(e) => setFormEditar({ ...formEditar, cantidad: e.target.value })} className={inputClass} />
+                    <select value={formEditar.unidad}
+                      onChange={(e) => setFormEditar({ ...formEditar, unidad: e.target.value })} className={inputClass}>
+                      {UNIDADES.map(u => <option key={u}>{u}</option>)}
+                    </select>
+                  </div>
+                  <input type="number" placeholder="Precio" value={formEditar.precio}
+                    onChange={(e) => setFormEditar({ ...formEditar, precio: e.target.value })} className={inputClass} />
+                  <input placeholder="Proveedor" value={formEditar.proveedor || ""}
+                    onChange={(e) => setFormEditar({ ...formEditar, proveedor: e.target.value })} className={inputClass} />
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => guardarEdicion(insumo)} style={{ background: GRAD }}
+                      className="text-white font-bold py-2 rounded-lg text-sm">💾 Guardar</button>
+                    <button onClick={() => setEditandoId(null)}
+                      className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 rounded-lg text-sm">Cancelar</button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="text-lg font-bold" style={{ color: "#b91c1c" }}>{insumo.nombre}</h3>
+                    <span className="bg-amber-100 text-amber-900 px-2 py-1 rounded-full text-xs font-semibold">{insumo.categoria}</span>
+                  </div>
+                  <div className="space-y-1 text-sm text-gray-600">
+                    <p>📦 Cantidad: {insumo.cantidad} {insumo.unidad}</p>
+                    <p>💰 Precio: ${parseFloat(insumo.precio).toLocaleString()}</p>
+                    <p>💵 Total: ${(parseFloat(insumo.precio) * parseFloat(insumo.cantidad)).toLocaleString()}</p>
+                    {insumo.proveedor && <p>🏪 Proveedor: {insumo.proveedor}</p>}
+                  </div>
+                  <button onClick={() => { setEditandoId(insumo.id); setFormEditar({ nombre: insumo.nombre, categoria: insumo.categoria, cantidad: insumo.cantidad, unidad: insumo.unidad, precio: insumo.precio, proveedor: insumo.proveedor || "" }); }}
+                    className="mt-3 text-yellow-600 hover:text-yellow-700 font-semibold text-sm">
+                    ✏️ Editar
+                  </button>
+                </>
+              )}
             </div>
           ))}
         </div>

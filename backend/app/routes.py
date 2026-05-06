@@ -218,5 +218,39 @@ def actualizar_pago_obrero(obrero_id: int, datos: ObreroCreate, db: Session = De
         setattr(obrero, key, value)
     db.commit()
     db.refresh(obrero)
-    return {"mensaje": "Obrero actualizado exitosamente"}    
+    return {"mensaje": "Obrero actualizado exitosamente"}
+    # Pega estos endpoints en routes.py justo antes del último return de obreros
+
+@router.put("/leche/{registro_id}")
+def actualizar_leche(registro_id: int, datos: RegistroLecheCreate, db: Session = Depends(get_db)):
+    registro = db.query(models.RegistroLeche).filter(models.RegistroLeche.id == registro_id).first()
+    if not registro:
+        raise HTTPException(status_code=404, detail="Registro no encontrado")
+    for key, value in datos.dict().items():
+        setattr(registro, key, value)
+    db.commit()
+    db.refresh(registro)
+    return {"mensaje": "Registro de leche actualizado exitosamente"}
+
+@router.put("/insumos/{insumo_id}")
+def actualizar_insumo(insumo_id: int, datos: InsumoCreate, db: Session = Depends(get_db)):
+    insumo = db.query(models.Insumo).filter(models.Insumo.id == insumo_id).first()
+    if not insumo:
+        raise HTTPException(status_code=404, detail="Insumo no encontrado")
+    for key, value in datos.dict().items():
+        setattr(insumo, key, value)
+    db.commit()
+    db.refresh(insumo)
+    return {"mensaje": "Insumo actualizado exitosamente"}
+
+@router.put("/finanzas/{finanza_id}")
+def actualizar_finanza(finanza_id: int, datos: FinanzaCreate, db: Session = Depends(get_db)):
+    finanza = db.query(models.Finanza).filter(models.Finanza.id == finanza_id).first()
+    if not finanza:
+        raise HTTPException(status_code=404, detail="Registro no encontrado")
+    for key, value in datos.dict().items():
+        setattr(finanza, key, value)
+    db.commit()
+    db.refresh(finanza)
+    return {"mensaje": "Registro financiero actualizado exitosamente"}
     return {"mensaje": "Registro de leche agregado exitosamente", "id": nuevo_registro.id}
