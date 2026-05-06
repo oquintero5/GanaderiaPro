@@ -6,6 +6,26 @@ import Lecheria from "./Lecheria";
 import Obreros from "./Obreros";
 import { listarAnimales, crearAnimal, agregarHistorial, listarHistorial, actualizarAnimal, actualizarHistorial } from "../api";
 
+// Paleta otoñal C: #fcd34d → #b91c1c
+const GRAD = "linear-gradient(135deg, #fcd34d, #b91c1c)";
+const GRAD_HOVER = "linear-gradient(135deg, #fbbf24, #991b1b)";
+
+function BtnPrimario({ onClick, disabled, children, className = "" }) {
+  const [hover, setHover] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{ background: hover ? GRAD_HOVER : GRAD }}
+      className={`text-white font-bold rounded-lg transition-all duration-200 shadow-md disabled:opacity-50 ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
 function Dashboard({ finca }) {
   const [animales, setAnimales] = useState([]);
   const [registrosFinanzas, setRegistrosFinanzas] = useState([]);
@@ -37,9 +57,7 @@ function Dashboard({ finca }) {
     }
   };
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const agregarAnimal = async () => {
     if (!form.nombre || !form.chapeta || !form.edad || !form.peso || !form.sexo || !form.raza) {
@@ -76,10 +94,7 @@ function Dashboard({ finca }) {
       return;
     }
     try {
-      await agregarHistorial({
-        animal_id: animalSeleccionado.id,
-        ...nuevoRegistroSalud,
-      });
+      await agregarHistorial({ animal_id: animalSeleccionado.id, ...nuevoRegistroSalud });
       const historial = await listarHistorial(animalSeleccionado.id);
       setAnimalSeleccionado({ ...animalSeleccionado, historialSalud: Array.isArray(historial) ? historial : [] });
       setNuevoRegistroSalud({ fecha: "", tipo: "", producto: "", dosis: "", observaciones: "" });
@@ -103,11 +118,7 @@ function Dashboard({ finca }) {
       });
       await cargarAnimales();
       const historial = await listarHistorial(animalSeleccionado.id);
-      setAnimalSeleccionado({
-        ...animalSeleccionado,
-        ...formEditar,
-        historialSalud: Array.isArray(historial) ? historial : []
-      });
+      setAnimalSeleccionado({ ...animalSeleccionado, ...formEditar, historialSalud: Array.isArray(historial) ? historial : [] });
       setEditandoAnimal(false);
       alert("¡Animal actualizado exitosamente!");
     } catch (e) {
@@ -117,15 +128,9 @@ function Dashboard({ finca }) {
 
   const guardarEdicionRegistro = async (registroId) => {
     try {
-      await actualizarHistorial(registroId, {
-        animal_id: animalSeleccionado.id,
-        ...formEditarRegistro,
-      });
+      await actualizarHistorial(registroId, { animal_id: animalSeleccionado.id, ...formEditarRegistro });
       const historial = await listarHistorial(animalSeleccionado.id);
-      setAnimalSeleccionado({
-        ...animalSeleccionado,
-        historialSalud: Array.isArray(historial) ? historial : []
-      });
+      setAnimalSeleccionado({ ...animalSeleccionado, historialSalud: Array.isArray(historial) ? historial : [] });
       setEditandoRegistroId(null);
       alert("¡Registro actualizado exitosamente!");
     } catch (e) {
@@ -149,13 +154,6 @@ function Dashboard({ finca }) {
     }
   };
 
-  // Formatea números grandes de forma compacta: 3000000 → $3M, 150000 → $150K
-  const formatMonto = (valor) => {
-    if (valor >= 1000000) return `$${(valor / 1000000).toFixed(1)}M`;
-    if (valor >= 1000) return `$${(valor / 1000).toFixed(0)}K`;
-    return `$${valor}`;
-  };
-
   const machos = animales.filter((a) => a.sexo === "Macho").length;
   const hembras = animales.filter((a) => a.sexo === "Hembra").length;
   const animalesFiltrados = animales.filter((a) =>
@@ -167,26 +165,38 @@ function Dashboard({ finca }) {
     ? `AgroGanaderíaPro\nAnimal: ${animalSeleccionado.nombre}\nChapeta: ${animalSeleccionado.chapeta}\nRaza: ${animalSeleccionado.raza}\nEdad: ${animalSeleccionado.edad} años\nPeso: ${animalSeleccionado.peso} kg\nSexo: ${animalSeleccionado.sexo}\nFinca: ${finca?.nombreFinca}`
     : "";
 
+  const inputClass = "w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-400";
+
+  const navItems = [
+    { key: "lecheria", label: "🥛 Lechería" },
+    { key: "inicio",   label: "🐄 Ganado" },
+    { key: "insumos",  label: "🌱 Insumos" },
+    { key: "obreros",  label: "👷 Obreros" },
+    { key: "finanzas", label: "💰 Finanzas" },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-100">
 
-      {/* HEADER */}
-      <div className="bg-amber-900 text-white py-4 px-4 shadow-lg">
-        <h1 className="text-2xl font-bold text-center">🐄 {finca?.nombreFinca || "Mi Finca"}</h1>
-        <p className="text-center text-amber-200 text-sm mt-1">AgroGanaderíaPro</p>
+      {/* HEADER con gradiente otoñal */}
+      <div style={{ background: GRAD }} className="text-white py-4 px-4 shadow-lg">
+        <h1 className="text-2xl font-bold text-center drop-shadow">🐄 {finca?.nombreFinca || "Mi Finca"}</h1>
+        <p className="text-center text-yellow-100 text-sm mt-1 drop-shadow">AgroGanaderíaPro</p>
       </div>
 
       {animalSeleccionado ? (
         <div className="px-4 py-4 max-w-2xl mx-auto">
-          <button onClick={() => { setAnimalSeleccionado(null); setVistaAnimal("info"); setEditandoAnimal(false); }}
-            className="mb-4 text-amber-800 font-semibold hover:underline">
+          <button
+            onClick={() => { setAnimalSeleccionado(null); setVistaAnimal("info"); setEditandoAnimal(false); }}
+            className="mb-4 font-semibold hover:underline"
+            style={{ color: "#b91c1c" }}>
             ← Volver al listado
           </button>
 
           <div className="bg-white rounded-xl shadow p-4">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h2 className="text-2xl font-bold text-amber-900">{animalSeleccionado.nombre}</h2>
+                <h2 className="text-2xl font-bold" style={{ color: "#b91c1c" }}>{animalSeleccionado.nombre}</h2>
                 <p className="text-gray-500 text-sm">Chapeta: {animalSeleccionado.chapeta}</p>
               </div>
               <span className={`px-3 py-1 rounded-full text-sm font-semibold ${animalSeleccionado.sexo === "Macho" ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"}`}>
@@ -194,19 +204,15 @@ function Dashboard({ finca }) {
               </span>
             </div>
 
+            {/* Tabs de animal */}
             <div className="flex gap-2 mb-4 overflow-x-auto">
-              <button onClick={() => setVistaAnimal("info")}
-                className={`px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap ${vistaAnimal === "info" ? "bg-amber-800 text-white" : "bg-gray-100 text-gray-600"}`}>
-                📋 Información
-              </button>
-              <button onClick={() => setVistaAnimal("salud")}
-                className={`px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap ${vistaAnimal === "salud" ? "bg-amber-800 text-white" : "bg-gray-100 text-gray-600"}`}>
-                💉 Salud
-              </button>
-              <button onClick={() => setVistaAnimal("qr")}
-                className={`px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap ${vistaAnimal === "qr" ? "bg-amber-800 text-white" : "bg-gray-100 text-gray-600"}`}>
-                📱 QR
-              </button>
+              {[["info","📋 Información"],["salud","💉 Salud"],["qr","📱 QR"]].map(([key, label]) => (
+                <button key={key} onClick={() => setVistaAnimal(key)}
+                  style={vistaAnimal === key ? { background: GRAD, color: "white" } : {}}
+                  className={`px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap transition duration-200 ${vistaAnimal !== key ? "bg-gray-100 text-gray-600" : ""}`}>
+                  {label}
+                </button>
+              ))}
             </div>
 
             {vistaAnimal === "info" && (
@@ -233,54 +239,26 @@ function Dashboard({ finca }) {
                         </div>
                       )}
                     </div>
-                    <button
-                      onClick={() => {
-                        setFormEditar({
-                          nombre: animalSeleccionado.nombre,
-                          chapeta: animalSeleccionado.chapeta,
-                          edad: animalSeleccionado.edad,
-                          peso: animalSeleccionado.peso,
-                          raza: animalSeleccionado.raza,
-                          crias: animalSeleccionado.crias || 0,
-                        });
-                        setEditandoAnimal(true);
-                      }}
-                      className="mt-4 w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 rounded-lg transition duration-200">
+                    <BtnPrimario onClick={() => { setFormEditar({ nombre: animalSeleccionado.nombre, chapeta: animalSeleccionado.chapeta, edad: animalSeleccionado.edad, peso: animalSeleccionado.peso, raza: animalSeleccionado.raza, crias: animalSeleccionado.crias || 0 }); setEditandoAnimal(true); }} className="mt-4 w-full py-3">
                       ✏️ Editar Información
-                    </button>
+                    </BtnPrimario>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <h3 className="font-bold text-gray-700">Editar Animal</h3>
-                    <input placeholder="Nombre *" value={formEditar.nombre}
-                      onChange={(e) => setFormEditar({ ...formEditar, nombre: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-                    <input placeholder="Chapeta *" value={formEditar.chapeta}
-                      onChange={(e) => setFormEditar({ ...formEditar, chapeta: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-                    <input placeholder="Edad (años)" value={formEditar.edad}
-                      onChange={(e) => setFormEditar({ ...formEditar, edad: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-                    <input placeholder="Peso (kg)" value={formEditar.peso}
-                      onChange={(e) => setFormEditar({ ...formEditar, peso: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-                    <input placeholder="Raza" value={formEditar.raza}
-                      onChange={(e) => setFormEditar({ ...formEditar, raza: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
+                    {["nombre","chapeta","edad","peso","raza"].map(field => (
+                      <input key={field} placeholder={field.charAt(0).toUpperCase()+field.slice(1)} value={formEditar[field] || ""}
+                        onChange={(e) => setFormEditar({ ...formEditar, [field]: e.target.value })}
+                        className={inputClass} />
+                    ))}
                     {animalSeleccionado.sexo === "Hembra" && (
                       <input placeholder="Número de crías" value={formEditar.crias}
                         onChange={(e) => setFormEditar({ ...formEditar, crias: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
+                        className={inputClass} />
                     )}
                     <div className="grid grid-cols-2 gap-3">
-                      <button onClick={() => guardarEdicionAnimal()}
-                        className="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 rounded-lg transition duration-200">
-                        💾 Guardar
-                      </button>
-                      <button onClick={() => setEditandoAnimal(false)}
-                        className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-lg transition duration-200">
-                        Cancelar
-                      </button>
+                      <BtnPrimario onClick={guardarEdicionAnimal} className="py-3">💾 Guardar</BtnPrimario>
+                      <button onClick={() => setEditandoAnimal(false)} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-lg">Cancelar</button>
                     </div>
                   </div>
                 )}
@@ -293,30 +271,23 @@ function Dashboard({ finca }) {
                   <h3 className="font-bold text-gray-700">Agregar Registro de Salud</h3>
                   <input type="date" value={nuevoRegistroSalud.fecha}
                     onChange={(e) => setNuevoRegistroSalud({ ...nuevoRegistroSalud, fecha: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
+                    className={inputClass} />
                   <select value={nuevoRegistroSalud.tipo}
                     onChange={(e) => setNuevoRegistroSalud({ ...nuevoRegistroSalud, tipo: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700">
+                    className={inputClass}>
                     <option value="">Tipo de tratamiento *</option>
-                    <option value="Vacuna">Vacuna</option>
-                    <option value="Vitamina">Vitamina</option>
-                    <option value="Purga">Purga</option>
-                    <option value="Medicamento">Medicamento</option>
-                    <option value="Otro">Otro</option>
+                    {["Vacuna","Vitamina","Purga","Medicamento","Otro"].map(t => <option key={t}>{t}</option>)}
                   </select>
                   <input placeholder="Producto o medicamento *" value={nuevoRegistroSalud.producto}
                     onChange={(e) => setNuevoRegistroSalud({ ...nuevoRegistroSalud, producto: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
+                    className={inputClass} />
                   <input placeholder="Dosis" value={nuevoRegistroSalud.dosis}
                     onChange={(e) => setNuevoRegistroSalud({ ...nuevoRegistroSalud, dosis: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
+                    className={inputClass} />
                   <textarea placeholder="Observaciones" value={nuevoRegistroSalud.observaciones}
                     onChange={(e) => setNuevoRegistroSalud({ ...nuevoRegistroSalud, observaciones: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" rows={3} />
-                  <button onClick={agregarRegistroSalud}
-                    className="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 rounded-lg transition duration-200">
-                    💉 Agregar Registro
-                  </button>
+                    className={inputClass} rows={3} />
+                  <BtnPrimario onClick={agregarRegistroSalud} className="w-full py-3">💉 Agregar Registro</BtnPrimario>
                 </div>
 
                 <h3 className="font-bold text-gray-700 mb-3">Historial ({animalSeleccionado.historialSalud.length} registros)</h3>
@@ -325,62 +296,40 @@ function Dashboard({ finca }) {
                 ) : (
                   <div className="space-y-3">
                     {animalSeleccionado.historialSalud.map((registro) => (
-                      <div key={registro.id} className="bg-gray-50 rounded-lg p-4 border-l-4 border-amber-700">
+                      <div key={registro.id} className="bg-gray-50 rounded-lg p-4 border-l-4" style={{ borderColor: "#b91c1c" }}>
                         {editandoRegistroId === registro.id ? (
                           <div className="space-y-2">
                             <input type="date" value={formEditarRegistro.fecha}
                               onChange={(e) => setFormEditarRegistro({ ...formEditarRegistro, fecha: e.target.value })}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-700" />
+                              className={inputClass} />
                             <select value={formEditarRegistro.tipo}
                               onChange={(e) => setFormEditarRegistro({ ...formEditarRegistro, tipo: e.target.value })}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-700">
-                              <option value="Vacuna">Vacuna</option>
-                              <option value="Vitamina">Vitamina</option>
-                              <option value="Purga">Purga</option>
-                              <option value="Medicamento">Medicamento</option>
-                              <option value="Otro">Otro</option>
+                              className={inputClass}>
+                              {["Vacuna","Vitamina","Purga","Medicamento","Otro"].map(t => <option key={t}>{t}</option>)}
                             </select>
                             <input placeholder="Producto" value={formEditarRegistro.producto}
                               onChange={(e) => setFormEditarRegistro({ ...formEditarRegistro, producto: e.target.value })}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-700" />
+                              className={inputClass} />
                             <input placeholder="Dosis" value={formEditarRegistro.dosis}
                               onChange={(e) => setFormEditarRegistro({ ...formEditarRegistro, dosis: e.target.value })}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-700" />
+                              className={inputClass} />
                             <textarea placeholder="Observaciones" value={formEditarRegistro.observaciones}
                               onChange={(e) => setFormEditarRegistro({ ...formEditarRegistro, observaciones: e.target.value })}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-700" rows={2} />
+                              className={inputClass} rows={2} />
                             <div className="grid grid-cols-2 gap-2">
-                              <button onClick={() => guardarEdicionRegistro(registro.id)}
-                                className="bg-amber-800 hover:bg-amber-900 text-white font-bold py-2 rounded-lg text-sm">
-                                💾 Guardar
-                              </button>
-                              <button onClick={() => setEditandoRegistroId(null)}
-                                className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 rounded-lg text-sm">
-                                Cancelar
-                              </button>
+                              <BtnPrimario onClick={() => guardarEdicionRegistro(registro.id)} className="py-2 text-sm">💾 Guardar</BtnPrimario>
+                              <button onClick={() => setEditandoRegistroId(null)} className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 rounded-lg text-sm">Cancelar</button>
                             </div>
                           </div>
                         ) : (
                           <div>
                             <div className="flex justify-between items-start">
                               <div>
-                                <span className="font-bold text-amber-900">{registro.tipo}</span>
+                                <span className="font-bold" style={{ color: "#b91c1c" }}>{registro.tipo}</span>
                                 <span className="text-gray-500 text-sm ml-2">{registro.fecha}</span>
                               </div>
-                              <button
-                                onClick={() => {
-                                  setEditandoRegistroId(registro.id);
-                                  setFormEditarRegistro({
-                                    fecha: registro.fecha,
-                                    tipo: registro.tipo,
-                                    producto: registro.producto,
-                                    dosis: registro.dosis || "",
-                                    observaciones: registro.observaciones || "",
-                                  });
-                                }}
-                                className="text-yellow-500 hover:text-yellow-600 font-semibold text-sm">
-                                ✏️ Editar
-                              </button>
+                              <button onClick={() => { setEditandoRegistroId(registro.id); setFormEditarRegistro({ fecha: registro.fecha, tipo: registro.tipo, producto: registro.producto, dosis: registro.dosis || "", observaciones: registro.observaciones || "" }); }}
+                                className="text-yellow-600 hover:text-yellow-700 font-semibold text-sm">✏️ Editar</button>
                             </div>
                             <p className="text-gray-700 mt-1">💊 {registro.producto}</p>
                             {registro.dosis && <p className="text-gray-500 text-sm">Dosis: {registro.dosis}</p>}
@@ -401,10 +350,7 @@ function Dashboard({ finca }) {
                   <QRCodeSVG value={infoQR} size={200} />
                 </div>
                 <p className="text-sm text-gray-400">Escanea con la cámara de tu celular</p>
-                <button onClick={() => window.print()}
-                  className="mt-4 bg-amber-800 hover:bg-amber-900 text-white font-bold px-6 py-3 rounded-lg transition duration-200">
-                  🖨️ Imprimir QR
-                </button>
+                <BtnPrimario onClick={() => window.print()} className="mt-4 px-6 py-3">🖨️ Imprimir QR</BtnPrimario>
               </div>
             )}
           </div>
@@ -413,47 +359,29 @@ function Dashboard({ finca }) {
       ) : (
         <div className="px-4 py-4">
 
-          {/* BOTONES DE NAVEGACIÓN */}
-          {/* BOTONES DE NAVEGACIÓN — una sola fila con scroll horizontal */}
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
-            <button onClick={() => setVista("lecheria")}
-              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "lecheria" ? "bg-amber-800 text-white" : "bg-white text-amber-800 border border-amber-800"}`}>
-              🥛 Lechería
-            </button>
-            <button onClick={() => setVista("inicio")}
-              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "inicio" ? "bg-amber-800 text-white" : "bg-white text-amber-800 border border-amber-800"}`}>
-              🐄 Ganado
-            </button>
-            <button onClick={() => setVista("insumos")}
-              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "insumos" ? "bg-amber-800 text-white" : "bg-white text-amber-800 border border-amber-800"}`}>
-              🌱 Insumos
-            </button>
-            <button onClick={() => setVista("obreros")}
-              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "obreros" ? "bg-amber-800 text-white" : "bg-white text-amber-800 border border-amber-800"}`}>
-              👷 Obreros
-            </button>
-            <button onClick={() => setVista("finanzas")}
-              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "finanzas" ? "bg-amber-800 text-white" : "bg-white text-amber-800 border border-amber-800"}`}>
-              💰 Finanzas
-            </button>
+          {/* BOTONES DE NAVEGACIÓN — centrados */}
+          <div className="flex flex-wrap justify-center gap-2 mb-4">
+            {navItems.map(({ key, label }) => (
+              <button key={key} onClick={() => setVista(key)}
+                style={vista === key ? { background: GRAD, color: "white" } : {}}
+                className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === key ? "shadow-md" : "bg-white border text-gray-700 border-gray-300 hover:border-yellow-500 hover:text-yellow-700"}`}>
+                {label}
+              </button>
+            ))}
           </div>
 
           {vista === "inicio" && (
             <div>
               <div className="mb-4">
-                <input
-                  type="text"
-                  placeholder="🔍 Buscar por nombre o chapeta..."
-                  value={busqueda}
-                  onChange={(e) => setBusqueda(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-700 bg-white shadow text-base" />
+                <input type="text" placeholder="🔍 Buscar por nombre o chapeta..."
+                  value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-500 bg-white shadow text-base" />
               </div>
 
-              {/* TARJETAS DE RESUMEN — texto adaptable */}
               <div className="grid grid-cols-3 gap-2 mb-4">
                 <div className="bg-white rounded-xl shadow p-3 text-center">
                   <p className="text-gray-500 text-xs mb-1">Total</p>
-                  <p className="text-2xl font-bold text-amber-900">{animales.length}</p>
+                  <p className="text-2xl font-bold" style={{ color: "#b91c1c" }}>{animales.length}</p>
                 </div>
                 <div className="bg-white rounded-xl shadow p-3 text-center">
                   <p className="text-gray-500 text-xs mb-1">Machos</p>
@@ -465,41 +393,30 @@ function Dashboard({ finca }) {
                 </div>
               </div>
 
-              <div className="text-center mb-4">
-                <button onClick={() => setMostrarFormAnimal(!mostrarFormAnimal)}
-                  className="bg-amber-800 hover:bg-amber-900 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
+              <div className="flex justify-center mb-4">
+                <BtnPrimario onClick={() => setMostrarFormAnimal(!mostrarFormAnimal)} className="px-8 py-3">
                   {mostrarFormAnimal ? "Cancelar" : "➕ Agregar Animal"}
-                </button>
+                </BtnPrimario>
               </div>
 
               {mostrarFormAnimal && (
                 <div className="bg-white rounded-xl shadow p-4 mb-4 max-w-lg mx-auto">
-                  <h2 className="text-lg font-bold text-amber-900 mb-4">Registrar Nuevo Animal</h2>
+                  <h2 className="text-lg font-bold mb-4" style={{ color: "#b91c1c" }}>Registrar Nuevo Animal</h2>
                   <div className="space-y-3">
-                    <input name="nombre" placeholder="Nombre del animal *" value={form.nombre} onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-                    <input name="chapeta" placeholder="ID / Chapeta *" value={form.chapeta} onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-                    <input name="edad" placeholder="Edad (años) *" value={form.edad} onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-                    <input name="peso" placeholder="Peso en kg *" value={form.peso} onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
-                    <select name="sexo" value={form.sexo} onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700">
+                    {["nombre","chapeta","edad","peso","raza"].map(field => (
+                      <input key={field} name={field} placeholder={field.charAt(0).toUpperCase()+field.slice(1)+" *"} value={form[field]} onChange={handleChange} className={inputClass} />
+                    ))}
+                    <select name="sexo" value={form.sexo} onChange={handleChange} className={inputClass}>
                       <option value="">Selecciona Sexo *</option>
                       <option value="Macho">Macho</option>
                       <option value="Hembra">Hembra</option>
                     </select>
-                    <input name="raza" placeholder="Raza *" value={form.raza} onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
                     {form.sexo === "Hembra" && (
-                      <input name="crias" placeholder="Número de crías que ha tenido" value={form.crias} onChange={handleChange}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-amber-700" />
+                      <input name="crias" placeholder="Número de crías que ha tenido" value={form.crias} onChange={handleChange} className={inputClass} />
                     )}
-                    <button onClick={agregarAnimal} disabled={cargando}
-                      className="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 rounded-lg transition duration-200 disabled:opacity-50">
+                    <BtnPrimario onClick={agregarAnimal} disabled={cargando} className="w-full py-3">
                       {cargando ? "Guardando..." : "Guardar Animal"}
-                    </button>
+                    </BtnPrimario>
                   </div>
                 </div>
               )}
@@ -517,20 +434,13 @@ function Dashboard({ finca }) {
                       onClick={async () => {
                         const historial = await listarHistorial(animal.id);
                         setAnimalSeleccionado({ ...animal, historialSalud: Array.isArray(historial) ? historial : [] });
-                        setFormEditar({
-                          nombre: animal.nombre,
-                          chapeta: animal.chapeta,
-                          edad: animal.edad,
-                          peso: animal.peso,
-                          raza: animal.raza,
-                          crias: animal.crias || 0,
-                        });
+                        setFormEditar({ nombre: animal.nombre, chapeta: animal.chapeta, edad: animal.edad, peso: animal.peso, raza: animal.raza, crias: animal.crias || 0 });
                         setEditandoAnimal(false);
                       }}
-                      className="bg-white rounded-xl shadow p-4 hover:shadow-lg transition duration-200 cursor-pointer hover:border-amber-700 border-2 border-transparent">
+                      className="bg-white rounded-xl shadow p-4 hover:shadow-lg transition duration-200 cursor-pointer border-2 border-transparent hover:border-yellow-400">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="text-lg font-bold text-amber-900">{animal.nombre}</h3>
+                          <h3 className="text-lg font-bold" style={{ color: "#b91c1c" }}>{animal.nombre}</h3>
                           <p className="text-gray-500 text-sm">Chapeta: {animal.chapeta}</p>
                         </div>
                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${animal.sexo === "Macho" ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"}`}>
@@ -543,7 +453,7 @@ function Dashboard({ finca }) {
                         <p>🐮 Raza: {animal.raza}</p>
                         {animal.sexo === "Hembra" && <p>🍼 Crías: {animal.crias || 0}</p>}
                       </div>
-                      <p className="text-amber-700 text-sm mt-3 font-semibold">Ver detalles →</p>
+                      <p className="text-sm mt-3 font-semibold" style={{ color: "#b91c1c" }}>Ver detalles →</p>
                     </div>
                   ))}
                 </div>
