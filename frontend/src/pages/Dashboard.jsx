@@ -171,22 +171,22 @@ function Dashboard({ finca }) {
     <div className="min-h-screen bg-gray-100">
 
       {/* HEADER */}
-      <div className="bg-green-700 text-white py-4 px-4 shadow-lg">
+      <div className="bg-red-800 text-white py-4 px-4 shadow-lg">
         <h1 className="text-2xl font-bold text-center">🐄 {finca?.nombreFinca || "Mi Finca"}</h1>
-        <p className="text-center text-green-200 text-sm mt-1">AgroGanaderíaPro</p>
+        <p className="text-center text-red-200 text-sm mt-1">AgroGanaderíaPro</p>
       </div>
 
       {animalSeleccionado ? (
         <div className="px-4 py-4 max-w-2xl mx-auto">
           <button onClick={() => { setAnimalSeleccionado(null); setVistaAnimal("info"); setEditandoAnimal(false); }}
-            className="mb-4 text-green-600 font-semibold hover:underline">
+            className="mb-4 text-red-700 font-semibold hover:underline">
             ← Volver al listado
           </button>
 
           <div className="bg-white rounded-xl shadow p-4">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h2 className="text-2xl font-bold text-green-700">{animalSeleccionado.nombre}</h2>
+                <h2 className="text-2xl font-bold text-red-800">{animalSeleccionado.nombre}</h2>
                 <p className="text-gray-500 text-sm">Chapeta: {animalSeleccionado.chapeta}</p>
               </div>
               <span className={`px-3 py-1 rounded-full text-sm font-semibold ${animalSeleccionado.sexo === "Macho" ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"}`}>
@@ -196,15 +196,15 @@ function Dashboard({ finca }) {
 
             <div className="flex gap-2 mb-4 overflow-x-auto">
               <button onClick={() => setVistaAnimal("info")}
-                className={`px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap ${vistaAnimal === "info" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600"}`}>
+                className={`px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap ${vistaAnimal === "info" ? "bg-red-700 text-white" : "bg-gray-100 text-gray-600"}`}>
                 📋 Información
               </button>
               <button onClick={() => setVistaAnimal("salud")}
-                className={`px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap ${vistaAnimal === "salud" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600"}`}>
+                className={`px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap ${vistaAnimal === "salud" ? "bg-red-700 text-white" : "bg-gray-100 text-gray-600"}`}>
                 💉 Salud
               </button>
               <button onClick={() => setVistaAnimal("qr")}
-                className={`px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap ${vistaAnimal === "qr" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-600"}`}>
+                className={`px-3 py-2 rounded-lg font-semibold text-sm whitespace-nowrap ${vistaAnimal === "qr" ? "bg-red-700 text-white" : "bg-gray-100 text-gray-600"}`}>
                 📱 QR
               </button>
             </div>
@@ -254,27 +254,27 @@ function Dashboard({ finca }) {
                     <h3 className="font-bold text-gray-700">Editar Animal</h3>
                     <input placeholder="Nombre *" value={formEditar.nombre}
                       onChange={(e) => setFormEditar({ ...formEditar, nombre: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
                     <input placeholder="Chapeta *" value={formEditar.chapeta}
                       onChange={(e) => setFormEditar({ ...formEditar, chapeta: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
                     <input placeholder="Edad (años)" value={formEditar.edad}
                       onChange={(e) => setFormEditar({ ...formEditar, edad: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
                     <input placeholder="Peso (kg)" value={formEditar.peso}
                       onChange={(e) => setFormEditar({ ...formEditar, peso: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
                     <input placeholder="Raza" value={formEditar.raza}
                       onChange={(e) => setFormEditar({ ...formEditar, raza: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
                     {animalSeleccionado.sexo === "Hembra" && (
                       <input placeholder="Número de crías" value={formEditar.crias}
                         onChange={(e) => setFormEditar({ ...formEditar, crias: e.target.value })}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
                     )}
                     <div className="grid grid-cols-2 gap-3">
                       <button onClick={() => guardarEdicionAnimal()}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200">
+                        className="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 rounded-lg transition duration-200">
                         💾 Guardar
                       </button>
                       <button onClick={() => setEditandoAnimal(false)}
@@ -293,10 +293,10 @@ function Dashboard({ finca }) {
                   <h3 className="font-bold text-gray-700">Agregar Registro de Salud</h3>
                   <input type="date" value={nuevoRegistroSalud.fecha}
                     onChange={(e) => setNuevoRegistroSalud({ ...nuevoRegistroSalud, fecha: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
                   <select value={nuevoRegistroSalud.tipo}
                     onChange={(e) => setNuevoRegistroSalud({ ...nuevoRegistroSalud, tipo: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500">
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600">
                     <option value="">Tipo de tratamiento *</option>
                     <option value="Vacuna">Vacuna</option>
                     <option value="Vitamina">Vitamina</option>
@@ -306,15 +306,15 @@ function Dashboard({ finca }) {
                   </select>
                   <input placeholder="Producto o medicamento *" value={nuevoRegistroSalud.producto}
                     onChange={(e) => setNuevoRegistroSalud({ ...nuevoRegistroSalud, producto: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
                   <input placeholder="Dosis" value={nuevoRegistroSalud.dosis}
                     onChange={(e) => setNuevoRegistroSalud({ ...nuevoRegistroSalud, dosis: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
                   <textarea placeholder="Observaciones" value={nuevoRegistroSalud.observaciones}
                     onChange={(e) => setNuevoRegistroSalud({ ...nuevoRegistroSalud, observaciones: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" rows={3} />
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" rows={3} />
                   <button onClick={agregarRegistroSalud}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200">
+                    className="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 rounded-lg transition duration-200">
                     💉 Agregar Registro
                   </button>
                 </div>
@@ -325,15 +325,15 @@ function Dashboard({ finca }) {
                 ) : (
                   <div className="space-y-3">
                     {animalSeleccionado.historialSalud.map((registro) => (
-                      <div key={registro.id} className="bg-gray-50 rounded-lg p-4 border-l-4 border-green-500">
+                      <div key={registro.id} className="bg-gray-50 rounded-lg p-4 border-l-4 border-red-600">
                         {editandoRegistroId === registro.id ? (
                           <div className="space-y-2">
                             <input type="date" value={formEditarRegistro.fecha}
                               onChange={(e) => setFormEditarRegistro({ ...formEditarRegistro, fecha: e.target.value })}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-green-500" />
+                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-red-600" />
                             <select value={formEditarRegistro.tipo}
                               onChange={(e) => setFormEditarRegistro({ ...formEditarRegistro, tipo: e.target.value })}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-green-500">
+                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-red-600">
                               <option value="Vacuna">Vacuna</option>
                               <option value="Vitamina">Vitamina</option>
                               <option value="Purga">Purga</option>
@@ -342,16 +342,16 @@ function Dashboard({ finca }) {
                             </select>
                             <input placeholder="Producto" value={formEditarRegistro.producto}
                               onChange={(e) => setFormEditarRegistro({ ...formEditarRegistro, producto: e.target.value })}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-green-500" />
+                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-red-600" />
                             <input placeholder="Dosis" value={formEditarRegistro.dosis}
                               onChange={(e) => setFormEditarRegistro({ ...formEditarRegistro, dosis: e.target.value })}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-green-500" />
+                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-red-600" />
                             <textarea placeholder="Observaciones" value={formEditarRegistro.observaciones}
                               onChange={(e) => setFormEditarRegistro({ ...formEditarRegistro, observaciones: e.target.value })}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-green-500" rows={2} />
+                              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-red-600" rows={2} />
                             <div className="grid grid-cols-2 gap-2">
                               <button onClick={() => guardarEdicionRegistro(registro.id)}
-                                className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg text-sm">
+                                className="bg-red-700 hover:bg-red-800 text-white font-bold py-2 rounded-lg text-sm">
                                 💾 Guardar
                               </button>
                               <button onClick={() => setEditandoRegistroId(null)}
@@ -364,7 +364,7 @@ function Dashboard({ finca }) {
                           <div>
                             <div className="flex justify-between items-start">
                               <div>
-                                <span className="font-bold text-green-700">{registro.tipo}</span>
+                                <span className="font-bold text-red-800">{registro.tipo}</span>
                                 <span className="text-gray-500 text-sm ml-2">{registro.fecha}</span>
                               </div>
                               <button
@@ -402,7 +402,7 @@ function Dashboard({ finca }) {
                 </div>
                 <p className="text-sm text-gray-400">Escanea con la cámara de tu celular</p>
                 <button onClick={() => window.print()}
-                  className="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold px-6 py-3 rounded-lg transition duration-200">
+                  className="mt-4 bg-red-700 hover:bg-red-800 text-white font-bold px-6 py-3 rounded-lg transition duration-200">
                   🖨️ Imprimir QR
                 </button>
               </div>
@@ -417,23 +417,23 @@ function Dashboard({ finca }) {
           {/* BOTONES DE NAVEGACIÓN — una sola fila con scroll horizontal */}
           <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
             <button onClick={() => setVista("lecheria")}
-              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "lecheria" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "lecheria" ? "bg-red-700 text-white" : "bg-white text-red-700 border border-red-700"}`}>
               🥛 Lechería
             </button>
             <button onClick={() => setVista("inicio")}
-              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "inicio" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "inicio" ? "bg-red-700 text-white" : "bg-white text-red-700 border border-red-700"}`}>
               🐄 Ganado
             </button>
             <button onClick={() => setVista("insumos")}
-              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "insumos" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "insumos" ? "bg-red-700 text-white" : "bg-white text-red-700 border border-red-700"}`}>
               🌱 Insumos
             </button>
             <button onClick={() => setVista("obreros")}
-              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "obreros" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "obreros" ? "bg-red-700 text-white" : "bg-white text-red-700 border border-red-700"}`}>
               👷 Obreros
             </button>
             <button onClick={() => setVista("finanzas")}
-              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "finanzas" ? "bg-green-600 text-white" : "bg-white text-green-600 border border-green-600"}`}>
+              className={`py-2 px-4 rounded-lg font-bold text-sm whitespace-nowrap transition duration-200 ${vista === "finanzas" ? "bg-red-700 text-white" : "bg-white text-red-700 border border-red-700"}`}>
               💰 Finanzas
             </button>
           </div>
@@ -446,14 +446,14 @@ function Dashboard({ finca }) {
                   placeholder="🔍 Buscar por nombre o chapeta..."
                   value={busqueda}
                   onChange={(e) => setBusqueda(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 bg-white shadow text-base" />
+                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600 bg-white shadow text-base" />
               </div>
 
               {/* TARJETAS DE RESUMEN — texto adaptable */}
               <div className="grid grid-cols-3 gap-2 mb-4">
                 <div className="bg-white rounded-xl shadow p-3 text-center">
                   <p className="text-gray-500 text-xs mb-1">Total</p>
-                  <p className="text-2xl font-bold text-green-700">{animales.length}</p>
+                  <p className="text-2xl font-bold text-red-800">{animales.length}</p>
                 </div>
                 <div className="bg-white rounded-xl shadow p-3 text-center">
                   <p className="text-gray-500 text-xs mb-1">Machos</p>
@@ -467,37 +467,37 @@ function Dashboard({ finca }) {
 
               <div className="text-center mb-4">
                 <button onClick={() => setMostrarFormAnimal(!mostrarFormAnimal)}
-                  className="bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
+                  className="bg-red-700 hover:bg-red-800 text-white font-bold px-8 py-3 rounded-lg transition duration-200">
                   {mostrarFormAnimal ? "Cancelar" : "➕ Agregar Animal"}
                 </button>
               </div>
 
               {mostrarFormAnimal && (
                 <div className="bg-white rounded-xl shadow p-4 mb-4 max-w-lg mx-auto">
-                  <h2 className="text-lg font-bold text-green-700 mb-4">Registrar Nuevo Animal</h2>
+                  <h2 className="text-lg font-bold text-red-800 mb-4">Registrar Nuevo Animal</h2>
                   <div className="space-y-3">
                     <input name="nombre" placeholder="Nombre del animal *" value={form.nombre} onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
                     <input name="chapeta" placeholder="ID / Chapeta *" value={form.chapeta} onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
                     <input name="edad" placeholder="Edad (años) *" value={form.edad} onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
                     <input name="peso" placeholder="Peso en kg *" value={form.peso} onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
                     <select name="sexo" value={form.sexo} onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500">
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600">
                       <option value="">Selecciona Sexo *</option>
                       <option value="Macho">Macho</option>
                       <option value="Hembra">Hembra</option>
                     </select>
                     <input name="raza" placeholder="Raza *" value={form.raza} onChange={handleChange}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
                     {form.sexo === "Hembra" && (
                       <input name="crias" placeholder="Número de crías que ha tenido" value={form.crias} onChange={handleChange}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-green-500" />
+                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-red-600" />
                     )}
                     <button onClick={agregarAnimal} disabled={cargando}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200 disabled:opacity-50">
+                      className="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 rounded-lg transition duration-200 disabled:opacity-50">
                       {cargando ? "Guardando..." : "Guardar Animal"}
                     </button>
                   </div>
@@ -527,10 +527,10 @@ function Dashboard({ finca }) {
                         });
                         setEditandoAnimal(false);
                       }}
-                      className="bg-white rounded-xl shadow p-4 hover:shadow-lg transition duration-200 cursor-pointer hover:border-green-500 border-2 border-transparent">
+                      className="bg-white rounded-xl shadow p-4 hover:shadow-lg transition duration-200 cursor-pointer hover:border-red-600 border-2 border-transparent">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="text-lg font-bold text-green-700">{animal.nombre}</h3>
+                          <h3 className="text-lg font-bold text-red-800">{animal.nombre}</h3>
                           <p className="text-gray-500 text-sm">Chapeta: {animal.chapeta}</p>
                         </div>
                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${animal.sexo === "Macho" ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"}`}>
@@ -543,7 +543,7 @@ function Dashboard({ finca }) {
                         <p>🐮 Raza: {animal.raza}</p>
                         {animal.sexo === "Hembra" && <p>🍼 Crías: {animal.crias || 0}</p>}
                       </div>
-                      <p className="text-green-500 text-sm mt-3 font-semibold">Ver detalles →</p>
+                      <p className="text-red-600 text-sm mt-3 font-semibold">Ver detalles →</p>
                     </div>
                   ))}
                 </div>

@@ -105,7 +105,7 @@ const [cargando, setCargando] = useState(false);
         <div className="bg-white bg-opacity-95 rounded-2xl shadow-2xl p-10 w-full max-w-lg">
 
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-green-700">🐄 Registrar Nueva Finca</h1>
+            <h1 className="text-3xl font-bold text-red-800">🐄 Registrar Nueva Finca</h1>
             <p className="text-gray-500 mt-2">Completa todos los campos para registrarte</p>
           </div>
 
@@ -117,23 +117,23 @@ const [cargando, setCargando] = useState(false);
 
           <div className="space-y-4">
             <input name="nombreFinca" placeholder="Nombre de la Finca *" value={form.nombreFinca} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600" />
 
             <div className="grid grid-cols-2 gap-4">
               <input name="nombre" placeholder="Nombre *" value={form.nombre} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500" />
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600" />
               <input name="apellido" placeholder="Apellido *" value={form.apellido} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500" />
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600" />
             </div>
 
             <input name="celular" placeholder="Número de Celular *" value={form.celular} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600" />
 
             <input name="correo" type="email" placeholder="Correo Electrónico *" value={form.correo} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600" />
 
             <select name="pais" value={form.pais} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500">
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600">
               <option value="">Selecciona tu País *</option>
               {Object.keys(paises).map((p) => (
                 <option key={p} value={p}>{p}</option>
@@ -142,7 +142,7 @@ const [cargando, setCargando] = useState(false);
 
             {form.pais && (
               <select name="departamento" value={form.departamento} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500">
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600">
                 <option value="">Selecciona Departamento/Estado *</option>
                 {paises[form.pais].map((d) => (
                   <option key={d} value={d}>{d}</option>
@@ -151,21 +151,21 @@ const [cargando, setCargando] = useState(false);
             )}
 
             <input name="municipio" placeholder="Municipio *" value={form.municipio} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600" />
 
             <input name="vereda" placeholder="Vereda *" value={form.vereda} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600" />
 
             <input name="clave" type="password" placeholder="Crear Clave (mínimo 6 caracteres, letras y números) *"
               value={form.clave} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600" />
 
             <input name="confirmarClave" type="password" placeholder="Confirmar Clave *"
               value={form.confirmarClave} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500" />
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-red-600" />
 
             <button onClick={handleRegister} disabled={cargando}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition duration-200 disabled:opacity-50">
+              className="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3 rounded-lg transition duration-200 disabled:opacity-50">
                  {cargando ? "Registrando..." : "Registrar Finca"}
              </button>
 
