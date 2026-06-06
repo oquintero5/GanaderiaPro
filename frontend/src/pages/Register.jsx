@@ -103,12 +103,12 @@ const [cargando, setCargando] = useState(false);
   return (
     <div className="min-h-screen relative flex items-center justify-center py-10"
       style={{
-        backgroundImage: "url('https://images.pexels.com/photos/2280551/pexels-photo-2280551.jpeg?auto=compress&cs=tinysrgb&w=1600')",
+        backgroundImage: "url('https://images.pexels.com/photos/5529559/pexels-photo-5529559.jpeg?auto=compress&cs=tinysrgb&w=1920')",
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}>
       {/* Overlay oscuro sobre la imagen */}
-      <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(15,61,35,0.82), rgba(22,101,52,0.75))" }} />
+      <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.38)" }} />
 
       <div className="relative z-10 w-full flex items-center justify-center px-4 py-10">
         <div className="bg-white bg-opacity-97 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
