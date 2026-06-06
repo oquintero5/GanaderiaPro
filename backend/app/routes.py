@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from passlib.context import CryptContext
+import bcrypt
 from . import models
 from .database import get_db
 from .auth import crear_token, get_finca_id
@@ -8,7 +8,12 @@ from pydantic import BaseModel
 from typing import Optional
 
 router = APIRouter()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_clave(clave: str) -> str:
+    return bcrypt.hashpw(clave.encode(), bcrypt.gensalt()).decode()
+
+def verificar_clave(clave: str, hashed: str) -> bool:
+    return bcrypt.checkpw(clave.encode(), hashed.encode())
 
 def verificar_finca(finca_id_recurso: int, finca_id_token: int):
     if finca_id_recurso != finca_id_token:
@@ -91,7 +96,7 @@ def registrar_finca(finca: FincaCreate, db: Session = Depends(get_db)):
     if existe:
         raise HTTPException(status_code=400, detail="Ya existe una finca con ese correo")
     datos = finca.dict()
-    datos["clave"] = pwd_context.hash(datos["clave"])
+    datos["clave"] = hash_clave(datos["clave"])
     nueva_finca = models.Finca(**datos)
     db.add(nueva_finca)
     db.commit()
@@ -107,10 +112,10 @@ def login_finca(datos: FincaLogin, db: Session = Depends(get_db)):
 
     clave_ok = False
     if finca.clave.startswith("$2b$") or finca.clave.startswith("$2a$"):
-        clave_ok = pwd_context.verify(datos.clave, finca.clave)
+        clave_ok = verificar_clave(datos.clave, finca.clave)
     else:
         if finca.clave == datos.clave:
-            finca.clave = pwd_context.hash(datos.clave)
+            finca.clave = hash_clave(datos.clave)
             db.commit()
             clave_ok = True
 
