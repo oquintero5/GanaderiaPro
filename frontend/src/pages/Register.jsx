@@ -98,84 +98,78 @@ const [cargando, setCargando] = useState(false);
     setCargando(false);
   };
 
-  return (
-    <div
-      className="min-h-screen flex items-center justify-center py-10"
-      style={{ background: GRAD }}
-    >
-      <div className="w-full flex items-center justify-center py-10">
-        <div className="bg-white bg-opacity-95 rounded-2xl shadow-2xl p-10 w-full max-w-lg">
+  const inputClass = "w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-500 bg-white text-sm";
 
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-amber-900">🐄 Registrar Nueva Finca</h1>
-            <p className="text-gray-500 mt-2">Completa todos los campos para registrarte</p>
+  return (
+    <div className="min-h-screen relative flex items-center justify-center py-10"
+      style={{
+        backgroundImage: "url('https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1600&q=80')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}>
+      {/* Overlay oscuro sobre la imagen */}
+      <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(15,61,35,0.82), rgba(22,101,52,0.75))" }} />
+
+      <div className="relative z-10 w-full flex items-center justify-center px-4 py-10">
+        <div className="bg-white bg-opacity-97 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
+
+          {/* Header del formulario */}
+          <div className="px-8 pt-8 pb-5 text-center border-b border-gray-100">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl shadow mb-3" style={{ background: GRAD }}>
+              <span className="text-2xl">🐄</span>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-800">Registrar Nueva Finca</h1>
+            <p className="text-gray-400 text-sm mt-1">Completa todos los campos para comenzar</p>
           </div>
 
-          {error && (
-            <div className="bg-amber-100 text-amber-700 px-4 py-3 rounded-lg mb-4 text-sm">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <input name="nombreFinca" placeholder="Nombre de la Finca *" value={form.nombreFinca} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-700" />
-
-            <div className="grid grid-cols-2 gap-4">
-              <input name="nombre" placeholder="Nombre *" value={form.nombre} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-700" />
-              <input name="apellido" placeholder="Apellido *" value={form.apellido} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-700" />
-            </div>
-
-            <input name="celular" placeholder="Número de Celular *" value={form.celular} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-700" />
-
-            <input name="correo" type="email" placeholder="Correo Electrónico *" value={form.correo} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-700" />
-
-            <select name="pais" value={form.pais} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-700">
-              <option value="">Selecciona tu País *</option>
-              {Object.keys(paises).map((p) => (
-                <option key={p} value={p}>{p}</option>
-              ))}
-            </select>
-
-            {form.pais && (
-              <select name="departamento" value={form.departamento} onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-700">
-                <option value="">Selecciona Departamento/Estado *</option>
-                {paises[form.pais].map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </select>
+          <div className="px-8 py-6">
+            {error && (
+              <div className="bg-red-50 border border-red-200 border-l-4 border-l-red-500 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">
+                ⚠️ {error}
+              </div>
             )}
 
-            <input name="municipio" placeholder="Municipio *" value={form.municipio} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-700" />
+            <div className="space-y-3">
+              <input name="nombreFinca" placeholder="Nombre de la Finca *" value={form.nombreFinca} onChange={handleChange} className={inputClass} />
 
-            <input name="vereda" placeholder="Vereda *" value={form.vereda} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-700" />
+              <div className="grid grid-cols-2 gap-3">
+                <input name="nombre" placeholder="Nombre *" value={form.nombre} onChange={handleChange} className={inputClass} />
+                <input name="apellido" placeholder="Apellido *" value={form.apellido} onChange={handleChange} className={inputClass} />
+              </div>
 
-            <input name="clave" type="password" placeholder="Crear Clave (mínimo 6 caracteres, letras y números) *"
-              value={form.clave} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-700" />
+              <input name="celular" placeholder="Número de Celular *" value={form.celular} onChange={handleChange} className={inputClass} />
+              <input name="correo" type="email" placeholder="Correo Electrónico *" value={form.correo} onChange={handleChange} className={inputClass} />
 
-            <input name="confirmarClave" type="password" placeholder="Confirmar Clave *"
-              value={form.confirmarClave} onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-700" />
+              <select name="pais" value={form.pais} onChange={handleChange} className={inputClass}>
+                <option value="">Selecciona tu País *</option>
+                {Object.keys(paises).map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
 
-            <button onClick={handleRegister} disabled={cargando}
-              style={{ background: GRAD }}
-              className="w-full text-white font-bold py-3 rounded-lg transition duration-200 disabled:opacity-50 shadow-sm">
-                 {cargando ? "Registrando..." : "Registrar Finca"}
-             </button>
+              {form.pais && (
+                <select name="departamento" value={form.departamento} onChange={handleChange} className={inputClass}>
+                  <option value="">Departamento/Estado *</option>
+                  {paises[form.pais].map((d) => <option key={d} value={d}>{d}</option>)}
+                </select>
+              )}
 
-            <button onClick={onBack}
-              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-lg transition duration-200">
-              Volver al Login
-            </button>
+              <div className="grid grid-cols-2 gap-3">
+                <input name="municipio" placeholder="Municipio *" value={form.municipio} onChange={handleChange} className={inputClass} />
+                <input name="vereda" placeholder="Vereda *" value={form.vereda} onChange={handleChange} className={inputClass} />
+              </div>
+
+              <input name="clave" type="password" placeholder="Clave (mín. 6 caracteres, letras y números) *" value={form.clave} onChange={handleChange} className={inputClass} />
+              <input name="confirmarClave" type="password" placeholder="Confirmar Clave *" value={form.confirmarClave} onChange={handleChange} className={inputClass} />
+
+              <button onClick={handleRegister} disabled={cargando} style={{ background: GRAD }}
+                className="w-full text-white font-semibold py-3 rounded-xl transition duration-200 disabled:opacity-50 shadow-sm text-sm mt-1">
+                {cargando ? "Registrando..." : "Crear mi Finca →"}
+              </button>
+
+              <button onClick={onBack}
+                className="w-full bg-gray-50 hover:bg-gray-100 text-gray-600 font-medium py-3 rounded-xl transition duration-200 text-sm border border-gray-200">
+                ← Volver al Login
+              </button>
+            </div>
           </div>
         </div>
       </div>
