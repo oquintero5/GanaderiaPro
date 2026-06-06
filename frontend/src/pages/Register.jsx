@@ -103,7 +103,7 @@ const [cargando, setCargando] = useState(false);
   return (
     <div className="min-h-screen relative flex items-center justify-center py-10"
       style={{
-        backgroundImage: "url('https://images.pexels.com/photos/5529559/pexels-photo-5529559.jpeg?auto=compress&cs=tinysrgb&w=1920')",
+        backgroundImage: "url('https://images.pexels.com/photos/947462/pexels-photo-947462.jpeg?auto=compress&cs=tinysrgb&w=1920')",
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}>
