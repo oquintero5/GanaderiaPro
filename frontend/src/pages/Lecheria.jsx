@@ -1,28 +1,15 @@
-import { useState, useEffect } from "react";
-import { listarLeche, crearRegistroLeche } from "../api";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { listarLeche, crearRegistroLeche, actualizarLeche } from "../api";
+import { GRAD, INPUT_CLASS } from "../shared";
 
-const GRAD = "linear-gradient(135deg, #fcd34d, #b91c1c)";
-const inputClass = "w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-400";
-
-const API_URL = import.meta.env.VITE_API_URL || "https://ganaderiapro-production.up.railway.app";
-
-async function actualizarLeche(id, datos) {
-  const res = await fetch(`${API_URL}/leche/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos),
-  });
-  return res.json();
-}
+const FORM_INICIAL = { fecha: "", litros: "", precioLitro: "", frecuenciaPago: "Mensual" };
 
 function Lecheria({ finca_id }) {
   const [registros, setRegistros] = useState([]);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [formEditar, setFormEditar] = useState({});
-  const [form, setForm] = useState({
-    fecha: "", litros: "", precioLitro: "", frecuenciaPago: "Mensual",
-  });
+  const [form, setForm] = useState(FORM_INICIAL);
 
   useEffect(() => {
     if (finca_id) cargarRegistros();
@@ -33,7 +20,10 @@ function Lecheria({ finca_id }) {
     if (Array.isArray(data)) setRegistros(data);
   };
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = useCallback(
+    (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value })),
+    []
+  );
 
   const agregarRegistro = async () => {
     if (!form.fecha || !form.litros || !form.precioLitro) {
@@ -49,10 +39,10 @@ function Lecheria({ finca_id }) {
         frecuencia_pago: form.frecuenciaPago,
       });
       await cargarRegistros();
-      setForm({ fecha: "", litros: "", precioLitro: "", frecuenciaPago: "Mensual" });
+      setForm(FORM_INICIAL);
       setMostrarForm(false);
       alert("¡Registro de leche agregado!");
-    } catch (e) {
+    } catch {
       alert("Error al guardar el registro");
     }
   };
@@ -69,27 +59,33 @@ function Lecheria({ finca_id }) {
       await cargarRegistros();
       setEditandoId(null);
       alert("¡Registro actualizado!");
-    } catch (e) {
+    } catch {
       alert("Error al actualizar el registro");
     }
   };
 
-  const totalLitros = registros.reduce((acc, r) => acc + parseFloat(r.litros || 0), 0);
-  const totalIngresos = registros.reduce((acc, r) => acc + parseFloat(r.litros || 0) * parseFloat(r.precio_litro || 0), 0);
-  const promedioDiario = registros.length > 0 ? totalLitros / registros.length : 0;
+  const { totalLitros, totalIngresos, promedioDiario, registrosPorMes } = useMemo(() => {
+    const totalLitros = registros.reduce((acc, r) => acc + parseFloat(r.litros || 0), 0);
+    const totalIngresos = registros.reduce((acc, r) => acc + parseFloat(r.litros || 0) * parseFloat(r.precio_litro || 0), 0);
+    const promedioDiario = registros.length > 0 ? totalLitros / registros.length : 0;
+    const registrosPorMes = registros.reduce((acc, r) => {
+      const mes = r.fecha.substring(0, 7);
+      if (!acc[mes]) acc[mes] = { litros: 0, ingresos: 0, dias: 0 };
+      acc[mes].litros += parseFloat(r.litros || 0);
+      acc[mes].ingresos += parseFloat(r.litros || 0) * parseFloat(r.precio_litro || 0);
+      acc[mes].dias += 1;
+      return acc;
+    }, {});
+    return { totalLitros, totalIngresos, promedioDiario, registrosPorMes };
+  }, [registros]);
 
-  const registrosPorMes = registros.reduce((acc, r) => {
-    const mes = r.fecha.substring(0, 7);
-    if (!acc[mes]) acc[mes] = { litros: 0, ingresos: 0, dias: 0 };
-    acc[mes].litros += parseFloat(r.litros || 0);
-    acc[mes].ingresos += parseFloat(r.litros || 0) * parseFloat(r.precio_litro || 0);
-    acc[mes].dias += 1;
-    return acc;
-  }, {});
+  const registrosOrdenados = useMemo(
+    () => [...registros].sort((a, b) => b.fecha.localeCompare(a.fecha)),
+    [registros]
+  );
 
   return (
     <div>
-      {/* Tarjetas resumen */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-xl shadow p-4 text-center">
           <p className="text-gray-500 text-sm">Total Litros</p>
@@ -127,7 +123,6 @@ function Lecheria({ finca_id }) {
         </div>
       )}
 
-      {/* Botón agregar */}
       <div className="flex justify-center mb-6">
         <button onClick={() => setMostrarForm(!mostrarForm)}
           style={{ background: GRAD }}
@@ -136,26 +131,25 @@ function Lecheria({ finca_id }) {
         </button>
       </div>
 
-      {/* Formulario nuevo registro */}
       {mostrarForm && (
         <div className="bg-white rounded-xl shadow p-6 mb-6 max-w-lg mx-auto">
           <h2 className="text-xl font-bold mb-4" style={{ color: "#b91c1c" }}>🥛 Registro Diario de Leche</h2>
           <div className="space-y-3">
             <div>
               <label className="block text-gray-700 font-semibold mb-1">Fecha *</label>
-              <input type="date" name="fecha" value={form.fecha} onChange={handleChange} className={inputClass} />
+              <input type="date" name="fecha" value={form.fecha} onChange={handleChange} className={INPUT_CLASS} />
             </div>
             <div>
               <label className="block text-gray-700 font-semibold mb-1">Litros producidos *</label>
-              <input type="number" name="litros" placeholder="Ej: 25.5" value={form.litros} onChange={handleChange} className={inputClass} />
+              <input type="number" name="litros" placeholder="Ej: 25.5" value={form.litros} onChange={handleChange} className={INPUT_CLASS} />
             </div>
             <div>
               <label className="block text-gray-700 font-semibold mb-1">Precio por litro *</label>
-              <input type="number" name="precioLitro" placeholder="Ej: 1200" value={form.precioLitro} onChange={handleChange} className={inputClass} />
+              <input type="number" name="precioLitro" placeholder="Ej: 1200" value={form.precioLitro} onChange={handleChange} className={INPUT_CLASS} />
             </div>
             <div>
               <label className="block text-gray-700 font-semibold mb-1">Frecuencia de pago</label>
-              <select name="frecuenciaPago" value={form.frecuenciaPago} onChange={handleChange} className={inputClass}>
+              <select name="frecuenciaPago" value={form.frecuenciaPago} onChange={handleChange} className={INPUT_CLASS}>
                 <option value="Semanal">Semanal</option>
                 <option value="Quincenal">Quincenal</option>
                 <option value="Mensual">Mensual</option>
@@ -170,7 +164,6 @@ function Lecheria({ finca_id }) {
         </div>
       )}
 
-      {/* Resumen por mes */}
       {Object.keys(registrosPorMes).length > 0 && (
         <div className="mb-6">
           <h3 className="font-bold text-gray-700 mb-3">📊 Resumen por Mes</h3>
@@ -201,7 +194,6 @@ function Lecheria({ finca_id }) {
         </div>
       )}
 
-      {/* Lista registros diarios */}
       <h3 className="font-bold text-gray-700 mb-3">📋 Registros Diarios</h3>
       {registros.length === 0 ? (
         <div className="text-center text-gray-400 mt-10">
@@ -211,7 +203,7 @@ function Lecheria({ finca_id }) {
         </div>
       ) : (
         <div className="space-y-2">
-          {registros.sort((a, b) => b.fecha.localeCompare(a.fecha)).map((registro) => (
+          {registrosOrdenados.map((registro) => (
             <div key={registro.id} className="bg-white rounded-xl shadow p-4 border-l-4" style={{ borderColor: "#b91c1c" }}>
               {editandoId === registro.id ? (
                 <div className="space-y-2">
@@ -219,26 +211,26 @@ function Lecheria({ finca_id }) {
                     <div>
                       <label className="text-xs text-gray-500">Fecha</label>
                       <input type="date" value={formEditar.fecha}
-                        onChange={(e) => setFormEditar({ ...formEditar, fecha: e.target.value })}
-                        className={inputClass} />
+                        onChange={(e) => setFormEditar((prev) => ({ ...prev, fecha: e.target.value }))}
+                        className={INPUT_CLASS} />
                     </div>
                     <div>
                       <label className="text-xs text-gray-500">Litros</label>
                       <input type="number" value={formEditar.litros}
-                        onChange={(e) => setFormEditar({ ...formEditar, litros: e.target.value })}
-                        className={inputClass} />
+                        onChange={(e) => setFormEditar((prev) => ({ ...prev, litros: e.target.value }))}
+                        className={INPUT_CLASS} />
                     </div>
                     <div>
                       <label className="text-xs text-gray-500">Precio/litro</label>
                       <input type="number" value={formEditar.precio_litro}
-                        onChange={(e) => setFormEditar({ ...formEditar, precio_litro: e.target.value })}
-                        className={inputClass} />
+                        onChange={(e) => setFormEditar((prev) => ({ ...prev, precio_litro: e.target.value }))}
+                        className={INPUT_CLASS} />
                     </div>
                     <div>
                       <label className="text-xs text-gray-500">Frecuencia</label>
                       <select value={formEditar.frecuencia_pago}
-                        onChange={(e) => setFormEditar({ ...formEditar, frecuencia_pago: e.target.value })}
-                        className={inputClass}>
+                        onChange={(e) => setFormEditar((prev) => ({ ...prev, frecuencia_pago: e.target.value }))}
+                        className={INPUT_CLASS}>
                         <option value="Semanal">Semanal</option>
                         <option value="Quincenal">Quincenal</option>
                         <option value="Mensual">Mensual</option>

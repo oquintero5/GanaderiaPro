@@ -1,145 +1,49 @@
 const API_URL = import.meta.env.VITE_API_URL || "https://ganaderiapro-production.up.railway.app";
 
-// Fincas
-export const registrarFinca = async (datos) => {
-  const res = await fetch(`${API_URL}/fincas/registro`, {
-    method: "POST",
+async function req(path, options = {}) {
+  const res = await fetch(`${API_URL}${path}`, {
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos),
+    ...options,
   });
   return res.json();
-};
+}
 
-export const loginFinca = async (datos) => {
-  const res = await fetch(`${API_URL}/fincas/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos),
-  });
-  return res.json();
-};
+const post = (path, data) => req(path, { method: "POST", body: JSON.stringify(data) });
+const put  = (path, data) => req(path, { method: "PUT",  body: JSON.stringify(data) });
+const del  = (path)       => req(path, { method: "DELETE" });
+
+// Fincas
+export const registrarFinca  = (datos) => post("/fincas/registro", datos);
+export const loginFinca      = (datos) => post("/fincas/login", datos);
 
 // Animales
-export const listarAnimales = async (finca_id) => {
-  const res = await fetch(`${API_URL}/animales/${finca_id}`);
-  return res.json();
-};
-
-export const crearAnimal = async (datos) => {
-  const res = await fetch(`${API_URL}/animales`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos),
-  });
-  return res.json();
-};
-
-export const eliminarAnimal = async (animal_id) => {
-  const res = await fetch(`${API_URL}/animales/${animal_id}`, {
-    method: "DELETE",
-  });
-  return res.json();
-};
+export const listarAnimales  = (finca_id)        => req(`/animales/${finca_id}`);
+export const crearAnimal     = (datos)            => post("/animales", datos);
+export const actualizarAnimal = (id, datos)       => put(`/animales/${id}`, datos);
+export const eliminarAnimal  = (id)               => del(`/animales/${id}`);
 
 // Historial Salud
-export const listarHistorial = async (animal_id) => {
-  const res = await fetch(`${API_URL}/historial/${animal_id}`);
-  return res.json();
-};
-
-export const agregarHistorial = async (datos) => {
-  const res = await fetch(`${API_URL}/historial`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos),
-  });
-  return res.json();
-};
+export const listarHistorial  = (animal_id)       => req(`/historial/${animal_id}`);
+export const agregarHistorial = (datos)           => post("/historial", datos);
+export const actualizarHistorial = (id, datos)    => put(`/historial/${id}`, datos);
 
 // Insumos
-export const listarInsumos = async (finca_id) => {
-  const res = await fetch(`${API_URL}/insumos/${finca_id}`);
-  return res.json();
-};
-
-export const crearInsumo = async (datos) => {
-  const res = await fetch(`${API_URL}/insumos`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos),
-  });
-  return res.json();
-};
+export const listarInsumos   = (finca_id)         => req(`/insumos/${finca_id}`);
+export const crearInsumo     = (datos)            => post("/insumos", datos);
+export const actualizarInsumo = (id, datos)       => put(`/insumos/${id}`, datos);
 
 // Finanzas
-export const listarFinanzas = async (finca_id) => {
-  const res = await fetch(`${API_URL}/finanzas/${finca_id}`);
-  return res.json();
-};
-
-export const crearFinanza = async (datos) => {
-  const res = await fetch(`${API_URL}/finanzas`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos),
-  });
-  return res.json();
-};
-// Actualizar Animal
-export const actualizarAnimal = async (animal_id, datos) => {
-  const res = await fetch(`${API_URL}/animales/${animal_id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos),
-  });
-  return res.json();
-};
-
-// Actualizar Historial
-export const actualizarHistorial = async (registro_id, datos) => {
-  const res = await fetch(`${API_URL}/historial/${registro_id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos),
-  });
-  return res.json();
-};
+export const listarFinanzas  = (finca_id)         => req(`/finanzas/${finca_id}`);
+export const crearFinanza    = (datos)            => post("/finanzas", datos);
+export const actualizarFinanza = (id, datos)      => put(`/finanzas/${id}`, datos);
 
 // Lechería
-export const listarLeche = async (finca_id) => {
-  const res = await fetch(`${API_URL}/leche/${finca_id}`);
-  return res.json();
-};
-
-export const crearRegistroLeche = async (datos) => {
-  const res = await fetch(`${API_URL}/leche`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos),
-  });
-  return res.json();
-};
+export const listarLeche          = (finca_id)    => req(`/leche/${finca_id}`);
+export const crearRegistroLeche   = (datos)       => post("/leche", datos);
+export const actualizarLeche      = (id, datos)   => put(`/leche/${id}`, datos);
 
 // Obreros
-export const listarObreros = async (finca_id) => {
-  const res = await fetch(`${API_URL}/obreros/${finca_id}`);
-  return res.json();
-};
-
-export const crearObrero = async (datos) => {
-  const res = await fetch(`${API_URL}/obreros`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos),
-  });
-  return res.json();
-};
-
-export const actualizarPagoObrero = async (obrero_id, datos) => {
-  const res = await fetch(`${API_URL}/obreros/${obrero_id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos),
-  });
-  return res.json();
-};
+export const listarObreros        = (finca_id)    => req(`/obreros/${finca_id}`);
+export const crearObrero          = (datos)       => post("/obreros", datos);
+export const actualizarPagoObrero = (id, datos)   => put(`/obreros/${id}`, datos);
+export const actualizarObrero     = (id, datos)   => put(`/obreros/${id}`, datos);

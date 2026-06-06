@@ -1,28 +1,17 @@
-import { useState, useEffect } from "react";
-import { listarInsumos, crearInsumo } from "../api";
-
-const GRAD = "linear-gradient(135deg, #fcd34d, #b91c1c)";
-const inputClass = "w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-400";
-const API_URL = import.meta.env.VITE_API_URL || "https://ganaderiapro-production.up.railway.app";
-
-async function actualizarInsumo(id, datos) {
-  const res = await fetch(`${API_URL}/insumos/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos),
-  });
-  return res.json();
-}
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { listarInsumos, crearInsumo, actualizarInsumo } from "../api";
+import { GRAD, INPUT_CLASS } from "../shared";
 
 const CATEGORIAS = ["Sal Mineral","Vitamina","Vacuna","Purga","Medicamento","Concentrado","Herramienta","Otro"];
 const UNIDADES = ["kg","litros","unidades","bultos","cajas"];
+const FORM_INICIAL = { nombre: "", categoria: "", cantidad: "", unidad: "", precio: "", proveedor: "" };
 
 function Insumos({ onAgregarInsumo, finca_id }) {
   const [insumos, setInsumos] = useState([]);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [formEditar, setFormEditar] = useState({});
-  const [form, setForm] = useState({ nombre: "", categoria: "", cantidad: "", unidad: "", precio: "", proveedor: "" });
+  const [form, setForm] = useState(FORM_INICIAL);
 
   useEffect(() => {
     if (finca_id) cargarInsumos();
@@ -33,7 +22,10 @@ function Insumos({ onAgregarInsumo, finca_id }) {
     if (Array.isArray(data)) setInsumos(data);
   };
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = useCallback(
+    (e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value })),
+    []
+  );
 
   const agregarInsumo = async () => {
     if (!form.nombre || !form.categoria || !form.cantidad || !form.precio) {
@@ -41,14 +33,21 @@ function Insumos({ onAgregarInsumo, finca_id }) {
       return;
     }
     try {
-      const nuevoInsumo = { ...form, finca_id };
-      await crearInsumo({ finca_id, nombre: form.nombre, categoria: form.categoria, cantidad: parseFloat(form.cantidad), unidad: form.unidad, precio: parseFloat(form.precio), proveedor: form.proveedor });
-      if (onAgregarInsumo) onAgregarInsumo(nuevoInsumo);
+      await crearInsumo({
+        finca_id,
+        nombre: form.nombre,
+        categoria: form.categoria,
+        cantidad: parseFloat(form.cantidad),
+        unidad: form.unidad,
+        precio: parseFloat(form.precio),
+        proveedor: form.proveedor,
+      });
+      if (onAgregarInsumo) onAgregarInsumo(form);
       await cargarInsumos();
-      setForm({ nombre: "", categoria: "", cantidad: "", unidad: "", precio: "", proveedor: "" });
+      setForm(FORM_INICIAL);
       setMostrarForm(false);
       alert("¡Insumo agregado exitosamente!");
-    } catch (e) {
+    } catch {
       alert("Error al guardar el insumo");
     }
   };
@@ -67,16 +66,18 @@ function Insumos({ onAgregarInsumo, finca_id }) {
       await cargarInsumos();
       setEditandoId(null);
       alert("¡Insumo actualizado!");
-    } catch (e) {
+    } catch {
       alert("Error al actualizar el insumo");
     }
   };
 
-  const totalInvertido = insumos.reduce((acc, i) => acc + (parseFloat(i.precio) * parseFloat(i.cantidad) || 0), 0);
+  const totalInvertido = useMemo(
+    () => insumos.reduce((acc, i) => acc + (parseFloat(i.precio) * parseFloat(i.cantidad) || 0), 0),
+    [insumos]
+  );
 
   return (
     <div>
-      {/* Resumen */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-white rounded-xl shadow p-6 text-center">
           <p className="text-gray-500 text-sm">Total Insumos</p>
@@ -88,7 +89,6 @@ function Insumos({ onAgregarInsumo, finca_id }) {
         </div>
       </div>
 
-      {/* Botón agregar */}
       <div className="flex justify-center mb-6">
         <button onClick={() => setMostrarForm(!mostrarForm)}
           style={{ background: GRAD }}
@@ -97,25 +97,24 @@ function Insumos({ onAgregarInsumo, finca_id }) {
         </button>
       </div>
 
-      {/* Formulario nuevo */}
       {mostrarForm && (
         <div className="bg-white rounded-xl shadow p-6 mb-6 max-w-lg mx-auto">
           <h2 className="text-xl font-bold mb-4" style={{ color: "#b91c1c" }}>Registrar Insumo</h2>
           <div className="space-y-3">
-            <input name="nombre" placeholder="Nombre del insumo *" value={form.nombre} onChange={handleChange} className={inputClass} />
-            <select name="categoria" value={form.categoria} onChange={handleChange} className={inputClass}>
+            <input name="nombre" placeholder="Nombre del insumo *" value={form.nombre} onChange={handleChange} className={INPUT_CLASS} />
+            <select name="categoria" value={form.categoria} onChange={handleChange} className={INPUT_CLASS}>
               <option value="">Selecciona Categoría *</option>
               {CATEGORIAS.map(c => <option key={c}>{c}</option>)}
             </select>
             <div className="grid grid-cols-2 gap-3">
-              <input name="cantidad" type="number" placeholder="Cantidad *" value={form.cantidad} onChange={handleChange} className={inputClass} />
-              <select name="unidad" value={form.unidad} onChange={handleChange} className={inputClass}>
+              <input name="cantidad" type="number" placeholder="Cantidad *" value={form.cantidad} onChange={handleChange} className={INPUT_CLASS} />
+              <select name="unidad" value={form.unidad} onChange={handleChange} className={INPUT_CLASS}>
                 <option value="">Unidad</option>
                 {UNIDADES.map(u => <option key={u}>{u}</option>)}
               </select>
             </div>
-            <input name="precio" type="number" placeholder="Precio unitario *" value={form.precio} onChange={handleChange} className={inputClass} />
-            <input name="proveedor" placeholder="Proveedor" value={form.proveedor} onChange={handleChange} className={inputClass} />
+            <input name="precio" type="number" placeholder="Precio unitario *" value={form.precio} onChange={handleChange} className={INPUT_CLASS} />
+            <input name="proveedor" placeholder="Proveedor" value={form.proveedor} onChange={handleChange} className={INPUT_CLASS} />
             <button onClick={agregarInsumo} style={{ background: GRAD }} className="w-full text-white font-bold py-3 rounded-lg shadow-md">
               Guardar Insumo
             </button>
@@ -123,7 +122,6 @@ function Insumos({ onAgregarInsumo, finca_id }) {
         </div>
       )}
 
-      {/* Lista */}
       {insumos.length === 0 ? (
         <div className="text-center text-gray-400 mt-10">
           <p className="text-6xl">🌱</p>
@@ -137,23 +135,23 @@ function Insumos({ onAgregarInsumo, finca_id }) {
               {editandoId === insumo.id ? (
                 <div className="space-y-2">
                   <input placeholder="Nombre *" value={formEditar.nombre}
-                    onChange={(e) => setFormEditar({ ...formEditar, nombre: e.target.value })} className={inputClass} />
+                    onChange={(e) => setFormEditar((prev) => ({ ...prev, nombre: e.target.value }))} className={INPUT_CLASS} />
                   <select value={formEditar.categoria}
-                    onChange={(e) => setFormEditar({ ...formEditar, categoria: e.target.value })} className={inputClass}>
+                    onChange={(e) => setFormEditar((prev) => ({ ...prev, categoria: e.target.value }))} className={INPUT_CLASS}>
                     {CATEGORIAS.map(c => <option key={c}>{c}</option>)}
                   </select>
                   <div className="grid grid-cols-2 gap-2">
                     <input type="number" placeholder="Cantidad" value={formEditar.cantidad}
-                      onChange={(e) => setFormEditar({ ...formEditar, cantidad: e.target.value })} className={inputClass} />
+                      onChange={(e) => setFormEditar((prev) => ({ ...prev, cantidad: e.target.value }))} className={INPUT_CLASS} />
                     <select value={formEditar.unidad}
-                      onChange={(e) => setFormEditar({ ...formEditar, unidad: e.target.value })} className={inputClass}>
+                      onChange={(e) => setFormEditar((prev) => ({ ...prev, unidad: e.target.value }))} className={INPUT_CLASS}>
                       {UNIDADES.map(u => <option key={u}>{u}</option>)}
                     </select>
                   </div>
                   <input type="number" placeholder="Precio" value={formEditar.precio}
-                    onChange={(e) => setFormEditar({ ...formEditar, precio: e.target.value })} className={inputClass} />
+                    onChange={(e) => setFormEditar((prev) => ({ ...prev, precio: e.target.value }))} className={INPUT_CLASS} />
                   <input placeholder="Proveedor" value={formEditar.proveedor || ""}
-                    onChange={(e) => setFormEditar({ ...formEditar, proveedor: e.target.value })} className={inputClass} />
+                    onChange={(e) => setFormEditar((prev) => ({ ...prev, proveedor: e.target.value }))} className={INPUT_CLASS} />
                   <div className="grid grid-cols-2 gap-2">
                     <button onClick={() => guardarEdicion(insumo)} style={{ background: GRAD }}
                       className="text-white font-bold py-2 rounded-lg text-sm">💾 Guardar</button>
