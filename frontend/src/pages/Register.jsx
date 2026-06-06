@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { registrarFinca } from "../api";
+import { GRAD } from "../shared";
 
 const paises = {
  "Colombia": ["Amazonas", "Antioquia", "Arauca", "Atlántico", "Bolívar", "Boyacá", "Caldas", "Caquetá", "Casanare", "Cauca", "Cesar", "Chocó", "Córdoba", "Cundinamarca", "Guainía", "Guaviare", "Huila", "La Guajira", "Magdalena", "Meta", "Nariño", "Norte de Santander", "Putumayo", "Quindío", "Risaralda", "San Andrés y Providencia", "Santander", "Sucre", "Tolima", "Valle del Cauca", "Vaupés", "Vichada"],
@@ -100,9 +101,7 @@ const [cargando, setCargando] = useState(false);
   return (
     <div
       className="min-h-screen flex items-center justify-center py-10"
-      style={{
-        background: "linear-gradient(135deg, #14532d 0%, #166534 40%, #15803d 70%, #4ade80 100%)",
-      }}
+      style={{ background: GRAD }}
     >
       <div className="w-full flex items-center justify-center py-10">
         <div className="bg-white bg-opacity-95 rounded-2xl shadow-2xl p-10 w-full max-w-lg">
@@ -168,7 +167,8 @@ const [cargando, setCargando] = useState(false);
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-amber-700" />
 
             <button onClick={handleRegister} disabled={cargando}
-              className="w-full bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 rounded-lg transition duration-200 disabled:opacity-50">
+              style={{ background: GRAD }}
+              className="w-full text-white font-bold py-3 rounded-lg transition duration-200 disabled:opacity-50 shadow-sm">
                  {cargando ? "Registrando..." : "Registrar Finca"}
              </button>
 
