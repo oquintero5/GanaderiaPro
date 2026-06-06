@@ -1,6 +1,6 @@
 import os
-from datetime import datetime, timedelta
-from jose import JWTError, jwt
+from datetime import datetime, timedelta, timezone
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
@@ -13,7 +13,7 @@ bearer = HTTPBearer()
 def crear_token(finca_id: int) -> str:
     payload = {
         "sub": str(finca_id),
-        "exp": datetime.utcnow() + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS),
+        "exp": datetime.now(timezone.utc) + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS),
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
@@ -21,7 +21,7 @@ def get_finca_id(credentials: HTTPAuthorizationCredentials = Depends(bearer)) ->
     try:
         payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
         return int(payload["sub"])
-    except (JWTError, KeyError, ValueError):
+    except (jwt.PyJWTError, KeyError, ValueError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token inválido o expirado",
