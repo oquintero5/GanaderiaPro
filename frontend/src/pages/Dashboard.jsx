@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { listarAnimales, crearAnimal, agregarHistorial, listarHistorial, actualizarAnimal, actualizarHistorial, crearFinanza } from "../api";
+import { listarAnimales, crearAnimal, agregarHistorial, listarHistorial, actualizarAnimal, actualizarHistorial, crearFinanza, eliminarAnimal } from "../api";
 import { GRAD, GRAD_HOVER, INPUT_CLASS } from "../shared";
+import { toast } from "../toast";
 
 const Insumos  = lazy(() => import("./Insumos"));
 const Finanzas = lazy(() => import("./Finanzas"));
@@ -24,6 +25,27 @@ function BtnPrimario({ onClick, disabled, children, className = "" }) {
   );
 }
 
+function ModalConfirmar({ mensaje, onConfirmar, onCancelar }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+      <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+        <p className="text-6xl text-center mb-4">⚠️</p>
+        <p className="text-gray-800 font-semibold text-center mb-6">{mensaje}</p>
+        <div className="grid grid-cols-2 gap-3">
+          <button onClick={onCancelar}
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl transition">
+            Cancelar
+          </button>
+          <button onClick={onConfirmar}
+            className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl transition">
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const FORM_INICIAL = { nombre: "", chapeta: "", edad: "", peso: "", sexo: "", raza: "", crias: "" };
 const SALUD_INICIAL = { fecha: "", tipo: "", producto: "", dosis: "", observaciones: "" };
 const TIPOS_SALUD = ["Vacuna", "Vitamina", "Purga", "Medicamento", "Otro"];
@@ -42,6 +64,8 @@ function Dashboard({ finca }) {
   const [animalSeleccionado, setAnimalSeleccionado] = useState(null);
   const [vistaAnimal, setVistaAnimal] = useState("info");
   const [cargando, setCargando] = useState(false);
+  const [cargandoSalud, setCargandoSalud] = useState(false);
+  const [cargandoLista, setCargandoLista] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [editandoAnimal, setEditandoAnimal] = useState(false);
   const [formEditar, setFormEditar] = useState({});
@@ -49,16 +73,19 @@ function Dashboard({ finca }) {
   const [formEditarRegistro, setFormEditarRegistro] = useState({});
   const [nuevoRegistroSalud, setNuevoRegistroSalud] = useState(SALUD_INICIAL);
   const [form, setForm] = useState(FORM_INICIAL);
+  const [confirmarEliminar, setConfirmarEliminar] = useState(null);
 
   useEffect(() => {
     if (finca?.finca_id) cargarAnimales();
   }, [finca]);
 
   const cargarAnimales = async () => {
+    setCargandoLista(true);
     const data = await listarAnimales(finca.finca_id);
     if (Array.isArray(data)) {
       setAnimales(data.map((a) => ({ ...a, historialSalud: [] })));
     }
+    setCargandoLista(false);
   };
 
   const handleChange = useCallback(
@@ -68,7 +95,7 @@ function Dashboard({ finca }) {
 
   const agregarAnimal = async () => {
     if (!form.nombre || !form.chapeta || !form.edad || !form.peso || !form.sexo || !form.raza) {
-      alert("Por favor completa todos los campos obligatorios");
+      toast.error("Por favor completa todos los campos obligatorios");
       return;
     }
     setCargando(true);
@@ -87,31 +114,51 @@ function Dashboard({ finca }) {
         await cargarAnimales();
         setForm(FORM_INICIAL);
         setMostrarFormAnimal(false);
-        alert("¡Animal registrado exitosamente!");
+        toast.success("¡Animal registrado exitosamente!");
       }
     } catch {
-      alert("Error al guardar el animal");
+      toast.error("Error al guardar el animal. Intenta de nuevo.");
     }
     setCargando(false);
   };
 
+  const confirmarEliminarAnimal = (animal, e) => {
+    e.stopPropagation();
+    setConfirmarEliminar(animal);
+  };
+
+  const ejecutarEliminarAnimal = async () => {
+    const animal = confirmarEliminar;
+    setConfirmarEliminar(null);
+    try {
+      await eliminarAnimal(animal.id);
+      setAnimales((prev) => prev.filter((a) => a.id !== animal.id));
+      toast.success(`${animal.nombre} eliminado correctamente`);
+    } catch {
+      toast.error("Error al eliminar el animal");
+    }
+  };
+
   const agregarRegistroSalud = async () => {
     if (!nuevoRegistroSalud.fecha || !nuevoRegistroSalud.tipo || !nuevoRegistroSalud.producto) {
-      alert("Por favor completa los campos obligatorios");
+      toast.error("Por favor completa los campos obligatorios");
       return;
     }
+    setCargandoSalud(true);
     try {
       await agregarHistorial({ animal_id: animalSeleccionado.id, ...nuevoRegistroSalud });
       const historial = await listarHistorial(animalSeleccionado.id);
       setAnimalSeleccionado((prev) => ({ ...prev, historialSalud: Array.isArray(historial) ? historial : [] }));
       setNuevoRegistroSalud(SALUD_INICIAL);
-      alert("¡Registro de salud agregado!");
+      toast.success("¡Registro de salud agregado!");
     } catch {
-      alert("Error al guardar el registro de salud");
+      toast.error("Error al guardar el registro de salud");
     }
+    setCargandoSalud(false);
   };
 
   const guardarEdicionAnimal = async () => {
+    setCargando(true);
     try {
       await actualizarAnimal(animalSeleccionado.id, {
         finca_id: finca?.finca_id,
@@ -127,10 +174,11 @@ function Dashboard({ finca }) {
       setAnimalSeleccionado((prev) => ({ ...prev, ...formEditar, historialSalud: Array.isArray(historial) ? historial : [] }));
       setAnimales((prev) => prev.map((a) => a.id === animalSeleccionado.id ? { ...a, ...formEditar } : a));
       setEditandoAnimal(false);
-      alert("¡Animal actualizado exitosamente!");
+      toast.success("¡Animal actualizado exitosamente!");
     } catch {
-      alert("Error al actualizar el animal");
+      toast.error("Error al actualizar el animal");
     }
+    setCargando(false);
   };
 
   const guardarEdicionRegistro = async (registroId) => {
@@ -139,9 +187,9 @@ function Dashboard({ finca }) {
       const historial = await listarHistorial(animalSeleccionado.id);
       setAnimalSeleccionado((prev) => ({ ...prev, historialSalud: Array.isArray(historial) ? historial : [] }));
       setEditandoRegistroId(null);
-      alert("¡Registro actualizado exitosamente!");
+      toast.success("¡Registro actualizado!");
     } catch {
-      alert("Error al actualizar el registro");
+      toast.error("Error al actualizar el registro");
     }
   };
 
@@ -189,6 +237,14 @@ function Dashboard({ finca }) {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {confirmarEliminar && (
+        <ModalConfirmar
+          mensaje={`¿Eliminar a ${confirmarEliminar.nombre} (chapeta: ${confirmarEliminar.chapeta})? Esta acción no se puede deshacer.`}
+          onConfirmar={ejecutarEliminarAnimal}
+          onCancelar={() => setConfirmarEliminar(null)}
+        />
+      )}
+
       <div style={{ background: GRAD }} className="text-white py-4 px-4 shadow-lg">
         <h1 className="text-2xl font-bold text-center drop-shadow">🐄 {finca?.nombreFinca || "Mi Finca"}</h1>
         <p className="text-center text-yellow-100 text-sm mt-1 drop-shadow">AgroGanaderíaPro</p>
@@ -248,9 +304,16 @@ function Dashboard({ finca }) {
                         </div>
                       )}
                     </div>
-                    <BtnPrimario onClick={() => { setFormEditar({ nombre: animalSeleccionado.nombre, chapeta: animalSeleccionado.chapeta, edad: animalSeleccionado.edad, peso: animalSeleccionado.peso, raza: animalSeleccionado.raza, crias: animalSeleccionado.crias || 0 }); setEditandoAnimal(true); }} className="mt-4 w-full py-3">
-                      ✏️ Editar Información
-                    </BtnPrimario>
+                    <div className="grid grid-cols-2 gap-3 mt-4">
+                      <BtnPrimario onClick={() => { setFormEditar({ nombre: animalSeleccionado.nombre, chapeta: animalSeleccionado.chapeta, edad: animalSeleccionado.edad, peso: animalSeleccionado.peso, raza: animalSeleccionado.raza, crias: animalSeleccionado.crias || 0 }); setEditandoAnimal(true); }} className="py-3">
+                        ✏️ Editar
+                      </BtnPrimario>
+                      <button
+                        onClick={() => setConfirmarEliminar(animalSeleccionado)}
+                        className="bg-red-100 hover:bg-red-200 text-red-700 font-bold py-3 rounded-lg transition">
+                        🗑️ Eliminar
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -266,7 +329,9 @@ function Dashboard({ finca }) {
                         className={INPUT_CLASS} />
                     )}
                     <div className="grid grid-cols-2 gap-3">
-                      <BtnPrimario onClick={guardarEdicionAnimal} className="py-3">💾 Guardar</BtnPrimario>
+                      <BtnPrimario onClick={guardarEdicionAnimal} disabled={cargando} className="py-3">
+                        {cargando ? "Guardando..." : "💾 Guardar"}
+                      </BtnPrimario>
                       <button onClick={() => setEditandoAnimal(false)} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-lg">Cancelar</button>
                     </div>
                   </div>
@@ -296,7 +361,9 @@ function Dashboard({ finca }) {
                   <textarea placeholder="Observaciones" value={nuevoRegistroSalud.observaciones}
                     onChange={(e) => setNuevoRegistroSalud((prev) => ({ ...prev, observaciones: e.target.value }))}
                     className={INPUT_CLASS} rows={3} />
-                  <BtnPrimario onClick={agregarRegistroSalud} className="w-full py-3">💉 Agregar Registro</BtnPrimario>
+                  <BtnPrimario onClick={agregarRegistroSalud} disabled={cargandoSalud} className="w-full py-3">
+                    {cargandoSalud ? "Guardando..." : "💉 Agregar Registro"}
+                  </BtnPrimario>
                 </div>
 
                 <h3 className="font-bold text-gray-700 mb-3">Historial ({animalSeleccionado.historialSalud.length} registros)</h3>
@@ -429,7 +496,12 @@ function Dashboard({ finca }) {
                   </div>
                 )}
 
-                {animalesFiltrados.length === 0 ? (
+                {cargandoLista ? (
+                  <div className="text-center py-10 text-gray-400">
+                    <div className="inline-block w-8 h-8 border-4 border-gray-200 border-t-yellow-500 rounded-full animate-spin mb-3" />
+                    <p>Cargando animales...</p>
+                  </div>
+                ) : animalesFiltrados.length === 0 ? (
                   <div className="text-center text-gray-400 mt-10">
                     <p className="text-6xl">🐄</p>
                     <p className="text-xl mt-4">No hay animales registrados aún</p>
@@ -440,16 +512,20 @@ function Dashboard({ finca }) {
                     {animalesFiltrados.map((animal) => (
                       <div key={animal.id}
                         onClick={() => seleccionarAnimal(animal)}
-                        className="bg-white rounded-xl shadow p-4 hover:shadow-lg transition duration-200 cursor-pointer border-2 border-transparent hover:border-yellow-400">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="text-lg font-bold" style={{ color: "#b91c1c" }}>{animal.nombre}</h3>
-                            <p className="text-gray-500 text-sm">Chapeta: {animal.chapeta}</p>
-                          </div>
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${animal.sexo === "Macho" ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"}`}>
-                            {animal.sexo}
-                          </span>
+                        className="bg-white rounded-xl shadow p-4 hover:shadow-lg transition duration-200 cursor-pointer border-2 border-transparent hover:border-yellow-400 relative">
+                        <button
+                          onClick={(e) => confirmarEliminarAnimal(animal, e)}
+                          className="absolute top-3 right-3 text-gray-300 hover:text-red-500 transition text-lg leading-none"
+                          title="Eliminar animal">
+                          🗑️
+                        </button>
+                        <div className="pr-8">
+                          <h3 className="text-lg font-bold" style={{ color: "#b91c1c" }}>{animal.nombre}</h3>
+                          <p className="text-gray-500 text-sm">Chapeta: {animal.chapeta}</p>
                         </div>
+                        <span className={`mt-2 inline-block px-2 py-1 rounded-full text-xs font-semibold ${animal.sexo === "Macho" ? "bg-blue-100 text-blue-600" : "bg-pink-100 text-pink-600"}`}>
+                          {animal.sexo}
+                        </span>
                         <div className="mt-3 space-y-1 text-sm text-gray-600">
                           <p>🎂 Edad: {animal.edad} años</p>
                           <p>⚖️ Peso: {animal.peso} kg</p>

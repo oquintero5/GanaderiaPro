@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { listarInsumos, crearInsumo, actualizarInsumo } from "../api";
 import { GRAD, INPUT_CLASS } from "../shared";
+import { toast } from "../toast";
 
 const CATEGORIAS = ["Sal Mineral","Vitamina","Vacuna","Purga","Medicamento","Concentrado","Herramienta","Otro"];
 const UNIDADES = ["kg","litros","unidades","bultos","cajas"];
@@ -8,6 +9,8 @@ const FORM_INICIAL = { nombre: "", categoria: "", cantidad: "", unidad: "", prec
 
 function Insumos({ onAgregarInsumo, finca_id }) {
   const [insumos, setInsumos] = useState([]);
+  const [cargando, setCargando] = useState(false);
+  const [guardando, setGuardando] = useState(false);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [formEditar, setFormEditar] = useState({});
@@ -18,8 +21,10 @@ function Insumos({ onAgregarInsumo, finca_id }) {
   }, [finca_id]);
 
   const cargarInsumos = async () => {
+    setCargando(true);
     const data = await listarInsumos(finca_id);
     if (Array.isArray(data)) setInsumos(data);
+    setCargando(false);
   };
 
   const handleChange = useCallback(
@@ -29,9 +34,10 @@ function Insumos({ onAgregarInsumo, finca_id }) {
 
   const agregarInsumo = async () => {
     if (!form.nombre || !form.categoria || !form.cantidad || !form.precio) {
-      alert("Por favor completa los campos obligatorios");
+      toast.error("Por favor completa los campos obligatorios");
       return;
     }
+    setGuardando(true);
     try {
       await crearInsumo({
         finca_id,
@@ -46,13 +52,15 @@ function Insumos({ onAgregarInsumo, finca_id }) {
       await cargarInsumos();
       setForm(FORM_INICIAL);
       setMostrarForm(false);
-      alert("¡Insumo agregado exitosamente!");
+      toast.success("¡Insumo agregado exitosamente!");
     } catch {
-      alert("Error al guardar el insumo");
+      toast.error("Error al guardar el insumo");
     }
+    setGuardando(false);
   };
 
   const guardarEdicion = async (insumo) => {
+    setGuardando(true);
     try {
       await actualizarInsumo(insumo.id, {
         finca_id,
@@ -65,15 +73,23 @@ function Insumos({ onAgregarInsumo, finca_id }) {
       });
       await cargarInsumos();
       setEditandoId(null);
-      alert("¡Insumo actualizado!");
+      toast.success("¡Insumo actualizado!");
     } catch {
-      alert("Error al actualizar el insumo");
+      toast.error("Error al actualizar el insumo");
     }
+    setGuardando(false);
   };
 
   const totalInvertido = useMemo(
     () => insumos.reduce((acc, i) => acc + (parseFloat(i.precio) * parseFloat(i.cantidad) || 0), 0),
     [insumos]
+  );
+
+  if (cargando) return (
+    <div className="text-center py-10 text-gray-400">
+      <div className="inline-block w-8 h-8 border-4 border-gray-200 border-t-yellow-500 rounded-full animate-spin mb-3" />
+      <p>Cargando insumos...</p>
+    </div>
   );
 
   return (
@@ -115,8 +131,9 @@ function Insumos({ onAgregarInsumo, finca_id }) {
             </div>
             <input name="precio" type="number" placeholder="Precio unitario *" value={form.precio} onChange={handleChange} className={INPUT_CLASS} />
             <input name="proveedor" placeholder="Proveedor" value={form.proveedor} onChange={handleChange} className={INPUT_CLASS} />
-            <button onClick={agregarInsumo} style={{ background: GRAD }} className="w-full text-white font-bold py-3 rounded-lg shadow-md">
-              Guardar Insumo
+            <button onClick={agregarInsumo} disabled={guardando} style={{ background: GRAD }}
+              className="w-full text-white font-bold py-3 rounded-lg shadow-md disabled:opacity-60">
+              {guardando ? "Guardando..." : "Guardar Insumo"}
             </button>
           </div>
         </div>
@@ -153,8 +170,10 @@ function Insumos({ onAgregarInsumo, finca_id }) {
                   <input placeholder="Proveedor" value={formEditar.proveedor || ""}
                     onChange={(e) => setFormEditar((prev) => ({ ...prev, proveedor: e.target.value }))} className={INPUT_CLASS} />
                   <div className="grid grid-cols-2 gap-2">
-                    <button onClick={() => guardarEdicion(insumo)} style={{ background: GRAD }}
-                      className="text-white font-bold py-2 rounded-lg text-sm">💾 Guardar</button>
+                    <button onClick={() => guardarEdicion(insumo)} disabled={guardando} style={{ background: GRAD }}
+                      className="text-white font-bold py-2 rounded-lg text-sm disabled:opacity-60">
+                      {guardando ? "..." : "💾 Guardar"}
+                    </button>
                     <button onClick={() => setEditandoId(null)}
                       className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 rounded-lg text-sm">Cancelar</button>
                   </div>

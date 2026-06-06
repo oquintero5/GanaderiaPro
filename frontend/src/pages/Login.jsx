@@ -98,7 +98,7 @@ function Login({ onRegister, onLogin }) {
         }
 
         .login-tagline span {
-          color: #fca5a5;
+          color: #fcd34d;
         }
 
         .login-sub {
@@ -151,7 +151,7 @@ function Login({ onRegister, onLogin }) {
         .login-logo-icon {
           width: 42px;
           height: 42px;
-          background: linear-gradient(135deg, #9b2335, #c0392b);
+          background: linear-gradient(135deg, #92400e, #b45309);
           border-radius: 12px;
           display: flex;
           align-items: center;
@@ -164,7 +164,7 @@ function Login({ onRegister, onLogin }) {
           font-family: 'Playfair Display', serif;
           font-size: 20px;
           font-weight: 600;
-          color: #7f1d1d;
+          color: #78350f;
           letter-spacing: -0.3px;
         }
 
@@ -231,7 +231,7 @@ function Login({ onRegister, onLogin }) {
         }
 
         .login-input:focus {
-          border-color: #9b2335;
+          border-color: #92400e;
           box-shadow: 0 0 0 3px rgba(155,35,53,0.1);
         }
 
@@ -255,12 +255,12 @@ function Login({ onRegister, onLogin }) {
           transition: color 0.2s;
         }
 
-        .toggle-pw:hover { color: #9b2335; }
+        .toggle-pw:hover { color: #92400e; }
 
         .login-btn {
           width: 100%;
           padding: 15px;
-          background: linear-gradient(135deg, #9b2335, #c0392b);
+          background: linear-gradient(135deg, #92400e, #b45309);
           color: white;
           border: none;
           border-radius: 10px;
@@ -333,8 +333,8 @@ function Login({ onRegister, onLogin }) {
           width: 100%;
           padding: 14px;
           background: transparent;
-          color: #9b2335;
-          border: 1.5px solid #fecdd3;
+          color: #92400e;
+          border: 1.5px solid #fde68a;
           border-radius: 10px;
           font-size: 14px;
           font-weight: 500;
@@ -345,8 +345,8 @@ function Login({ onRegister, onLogin }) {
         }
 
         .login-register-btn:hover {
-          background: #fff1f2;
-          border-color: #fca5a5;
+          background: #fffbeb;
+          border-color: #fcd34d;
         }
 
         .login-footer {
@@ -364,7 +364,7 @@ function Login({ onRegister, onLogin }) {
           position: absolute;
           border-radius: 50%;
           opacity: 0.05;
-          background: #9b2335;
+          background: #92400e;
           pointer-events: none;
         }
 

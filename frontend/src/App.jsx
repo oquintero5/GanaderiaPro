@@ -2,6 +2,7 @@ import { useState } from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import { ToastContainer } from "./ToastContainer";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("login");
@@ -9,6 +10,7 @@ function App() {
 
   return (
     <div>
+      <ToastContainer />
       {currentPage === "login" && (
         <Login
           onRegister={() => setCurrentPage("register")}

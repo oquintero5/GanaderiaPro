@@ -1,11 +1,14 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { listarObreros, crearObrero, actualizarPagoObrero, actualizarObrero } from "../api";
 import { GRAD, INPUT_CLASS } from "../shared";
+import { toast } from "../toast";
 
 const FORM_INICIAL = { nombre: "", dias_trabajados: "", precio_jornal: "", fecha: "", comentario: "", pagado: false };
 
 function Obreros({ finca_id }) {
   const [obreros, setObreros] = useState([]);
+  const [cargando, setCargando] = useState(false);
+  const [guardando, setGuardando] = useState(false);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [formEditar, setFormEditar] = useState({});
@@ -16,12 +19,14 @@ function Obreros({ finca_id }) {
   }, [finca_id]);
 
   const cargarObreros = async () => {
+    setCargando(true);
     try {
       const data = await listarObreros(finca_id);
       if (Array.isArray(data)) setObreros(data);
     } catch (e) {
       console.error("Error cargando obreros", e);
     }
+    setCargando(false);
   };
 
   const handleChange = useCallback(
@@ -41,21 +46,24 @@ function Obreros({ finca_id }) {
 
   const agregarObrero = async () => {
     if (!form.nombre || !form.dias_trabajados || !form.precio_jornal || !form.fecha) {
-      alert("Por favor completa los campos obligatorios");
+      toast.error("Por favor completa los campos obligatorios");
       return;
     }
+    setGuardando(true);
     try {
       await crearObrero({ finca_id, nombre: form.nombre, dias_trabajados: parseFloat(form.dias_trabajados), precio_jornal: parseFloat(form.precio_jornal), total_pagar: totalAPagar, fecha: form.fecha, comentario: form.comentario, pagado: false });
       await cargarObreros();
       setForm(FORM_INICIAL);
       setMostrarForm(false);
-      alert("¡Obrero registrado exitosamente!");
+      toast.success("¡Obrero registrado exitosamente!");
     } catch {
-      alert("Error al guardar el obrero");
+      toast.error("Error al guardar el obrero");
     }
+    setGuardando(false);
   };
 
   const guardarEdicion = async (obrero) => {
+    setGuardando(true);
     try {
       await actualizarObrero(obrero.id, {
         finca_id,
@@ -69,24 +77,33 @@ function Obreros({ finca_id }) {
       });
       await cargarObreros();
       setEditandoId(null);
-      alert("¡Obrero actualizado!");
+      toast.success("¡Obrero actualizado!");
     } catch {
-      alert("Error al actualizar el obrero");
+      toast.error("Error al actualizar el obrero");
     }
+    setGuardando(false);
   };
 
   const togglePago = async (obrero) => {
     try {
       await actualizarPagoObrero(obrero.id, { ...obrero, pagado: !obrero.pagado });
-      await cargarObreros();
+      setObreros((prev) => prev.map((o) => o.id === obrero.id ? { ...o, pagado: !o.pagado } : o));
+      toast.info(obrero.pagado ? `${obrero.nombre} marcado como pendiente` : `✅ ${obrero.nombre} marcado como pagado`);
     } catch {
-      alert("Error al actualizar el pago");
+      toast.error("Error al actualizar el pago");
     }
   };
 
   const totalPendiente = useMemo(
     () => obreros.filter(o => !o.pagado).reduce((acc, o) => acc + parseFloat(o.total_pagar || 0), 0),
     [obreros]
+  );
+
+  if (cargando) return (
+    <div className="text-center py-10 text-gray-400">
+      <div className="inline-block w-8 h-8 border-4 border-gray-200 border-t-yellow-500 rounded-full animate-spin mb-3" />
+      <p>Cargando obreros...</p>
+    </div>
   );
 
   return (
@@ -120,8 +137,9 @@ function Obreros({ finca_id }) {
             )}
             <input name="fecha" type="date" value={form.fecha} onChange={handleChange} className={INPUT_CLASS} />
             <input name="comentario" placeholder="Comentario (opcional)" value={form.comentario} onChange={handleChange} className={INPUT_CLASS} />
-            <button onClick={agregarObrero} style={{ background: GRAD }} className="w-full text-white font-bold py-3 rounded-lg shadow-md">
-              Guardar Obrero
+            <button onClick={agregarObrero} disabled={guardando} style={{ background: GRAD }}
+              className="w-full text-white font-bold py-3 rounded-lg shadow-md disabled:opacity-60">
+              {guardando ? "Guardando..." : "Guardar Obrero"}
             </button>
           </div>
         </div>
@@ -158,8 +176,10 @@ function Obreros({ finca_id }) {
                   <input placeholder="Comentario" value={formEditar.comentario || ""}
                     onChange={(e) => setFormEditar((prev) => ({ ...prev, comentario: e.target.value }))} className={INPUT_CLASS} />
                   <div className="grid grid-cols-2 gap-2">
-                    <button onClick={() => guardarEdicion(obrero)} style={{ background: GRAD }}
-                      className="text-white font-bold py-2 rounded-lg text-sm">💾 Guardar</button>
+                    <button onClick={() => guardarEdicion(obrero)} disabled={guardando} style={{ background: GRAD }}
+                      className="text-white font-bold py-2 rounded-lg text-sm disabled:opacity-60">
+                      {guardando ? "..." : "💾 Guardar"}
+                    </button>
                     <button onClick={() => setEditandoId(null)}
                       className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 rounded-lg text-sm">Cancelar</button>
                   </div>

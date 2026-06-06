@@ -1,11 +1,23 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { listarLeche, crearRegistroLeche, actualizarLeche } from "../api";
 import { GRAD, INPUT_CLASS } from "../shared";
+import { toast } from "../toast";
 
 const FORM_INICIAL = { fecha: "", litros: "", precioLitro: "", frecuenciaPago: "Mensual" };
 
+function Spinner() {
+  return (
+    <div className="text-center py-10 text-gray-400">
+      <div className="inline-block w-8 h-8 border-4 border-gray-200 border-t-yellow-500 rounded-full animate-spin mb-3" />
+      <p>Cargando...</p>
+    </div>
+  );
+}
+
 function Lecheria({ finca_id }) {
   const [registros, setRegistros] = useState([]);
+  const [cargando, setCargando] = useState(false);
+  const [guardando, setGuardando] = useState(false);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [formEditar, setFormEditar] = useState({});
@@ -16,8 +28,10 @@ function Lecheria({ finca_id }) {
   }, [finca_id]);
 
   const cargarRegistros = async () => {
+    setCargando(true);
     const data = await listarLeche(finca_id);
     if (Array.isArray(data)) setRegistros(data);
+    setCargando(false);
   };
 
   const handleChange = useCallback(
@@ -27,9 +41,10 @@ function Lecheria({ finca_id }) {
 
   const agregarRegistro = async () => {
     if (!form.fecha || !form.litros || !form.precioLitro) {
-      alert("Por favor completa todos los campos obligatorios");
+      toast.error("Por favor completa todos los campos obligatorios");
       return;
     }
+    setGuardando(true);
     try {
       await crearRegistroLeche({
         finca_id,
@@ -41,13 +56,15 @@ function Lecheria({ finca_id }) {
       await cargarRegistros();
       setForm(FORM_INICIAL);
       setMostrarForm(false);
-      alert("¡Registro de leche agregado!");
+      toast.success("¡Registro de leche agregado!");
     } catch {
-      alert("Error al guardar el registro");
+      toast.error("Error al guardar el registro");
     }
+    setGuardando(false);
   };
 
   const guardarEdicion = async (registro) => {
+    setGuardando(true);
     try {
       await actualizarLeche(registro.id, {
         finca_id,
@@ -58,10 +75,11 @@ function Lecheria({ finca_id }) {
       });
       await cargarRegistros();
       setEditandoId(null);
-      alert("¡Registro actualizado!");
+      toast.success("¡Registro actualizado!");
     } catch {
-      alert("Error al actualizar el registro");
+      toast.error("Error al actualizar el registro");
     }
+    setGuardando(false);
   };
 
   const { totalLitros, totalIngresos, promedioDiario, registrosPorMes } = useMemo(() => {
@@ -83,6 +101,8 @@ function Lecheria({ finca_id }) {
     () => [...registros].sort((a, b) => b.fecha.localeCompare(a.fecha)),
     [registros]
   );
+
+  if (cargando) return <Spinner />;
 
   return (
     <div>
@@ -155,10 +175,10 @@ function Lecheria({ finca_id }) {
                 <option value="Mensual">Mensual</option>
               </select>
             </div>
-            <button onClick={agregarRegistro}
+            <button onClick={agregarRegistro} disabled={guardando}
               style={{ background: GRAD }}
-              className="w-full text-white font-bold py-3 rounded-lg shadow-md">
-              💾 Guardar Registro
+              className="w-full text-white font-bold py-3 rounded-lg shadow-md disabled:opacity-60">
+              {guardando ? "Guardando..." : "💾 Guardar Registro"}
             </button>
           </div>
         </div>
@@ -238,10 +258,10 @@ function Lecheria({ finca_id }) {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 mt-2">
-                    <button onClick={() => guardarEdicion(registro)}
+                    <button onClick={() => guardarEdicion(registro)} disabled={guardando}
                       style={{ background: GRAD }}
-                      className="text-white font-bold py-2 rounded-lg text-sm">
-                      💾 Guardar
+                      className="text-white font-bold py-2 rounded-lg text-sm disabled:opacity-60">
+                      {guardando ? "..." : "💾 Guardar"}
                     </button>
                     <button onClick={() => setEditandoId(null)}
                       className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 rounded-lg text-sm">

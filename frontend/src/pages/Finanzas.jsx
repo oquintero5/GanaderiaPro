@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { listarFinanzas, crearFinanza, actualizarFinanza } from "../api";
 import { GRAD, INPUT_CLASS } from "../shared";
+import { toast } from "../toast";
 
 const CATEGORIAS_INGRESO = ["Venta de Animal","Venta de Leche","Venta de Cría","Otro Ingreso"];
 const CATEGORIAS_GASTO = ["Compra de Animal","Compra de Insumos","Veterinario","Alimentación","Mano de Obra","Transporte","Otro Gasto"];
@@ -8,6 +9,8 @@ const FORM_INICIAL = { tipo: "", categoria: "", descripcion: "", monto: "", fech
 
 function Finanzas({ finca_id }) {
   const [registros, setRegistros] = useState([]);
+  const [cargando, setCargando] = useState(false);
+  const [guardando, setGuardando] = useState(false);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [formEditar, setFormEditar] = useState({});
@@ -18,8 +21,10 @@ function Finanzas({ finca_id }) {
   }, [finca_id]);
 
   const cargarFinanzas = async () => {
+    setCargando(true);
     const data = await listarFinanzas(finca_id);
     if (Array.isArray(data)) setRegistros(data);
+    setCargando(false);
   };
 
   const handleChange = useCallback(
@@ -29,21 +34,24 @@ function Finanzas({ finca_id }) {
 
   const agregarRegistro = async () => {
     if (!form.tipo || !form.categoria || !form.monto || !form.fecha) {
-      alert("Por favor completa los campos obligatorios");
+      toast.error("Por favor completa los campos obligatorios");
       return;
     }
+    setGuardando(true);
     try {
       await crearFinanza({ finca_id, tipo: form.tipo, categoria: form.categoria, descripcion: form.descripcion, monto: parseFloat(form.monto), fecha: form.fecha });
       await cargarFinanzas();
       setForm(FORM_INICIAL);
       setMostrarForm(false);
-      alert("¡Registro agregado exitosamente!");
+      toast.success("¡Registro agregado exitosamente!");
     } catch {
-      alert("Error al guardar el registro financiero");
+      toast.error("Error al guardar el registro financiero");
     }
+    setGuardando(false);
   };
 
   const guardarEdicion = async (registro) => {
+    setGuardando(true);
     try {
       await actualizarFinanza(registro.id, {
         finca_id,
@@ -55,10 +63,11 @@ function Finanzas({ finca_id }) {
       });
       await cargarFinanzas();
       setEditandoId(null);
-      alert("¡Registro actualizado!");
+      toast.success("¡Registro actualizado!");
     } catch {
-      alert("Error al actualizar el registro");
+      toast.error("Error al actualizar el registro");
     }
+    setGuardando(false);
   };
 
   const { totalIngresos, totalGastos, balance } = useMemo(() => {
@@ -66,6 +75,13 @@ function Finanzas({ finca_id }) {
     const totalGastos  = registros.filter(r => r.tipo === "Gasto").reduce((acc, r) => acc + parseFloat(r.monto || 0), 0);
     return { totalIngresos, totalGastos, balance: totalIngresos - totalGastos };
   }, [registros]);
+
+  if (cargando) return (
+    <div className="text-center py-10 text-gray-400">
+      <div className="inline-block w-8 h-8 border-4 border-gray-200 border-t-yellow-500 rounded-full animate-spin mb-3" />
+      <p>Cargando finanzas...</p>
+    </div>
+  );
 
   return (
     <div>
@@ -110,8 +126,9 @@ function Finanzas({ finca_id }) {
             <input name="descripcion" placeholder="Descripción" value={form.descripcion} onChange={handleChange} className={INPUT_CLASS} />
             <input name="monto" type="number" placeholder="Monto *" value={form.monto} onChange={handleChange} className={INPUT_CLASS} />
             <input name="fecha" type="date" value={form.fecha} onChange={handleChange} className={INPUT_CLASS} />
-            <button onClick={agregarRegistro} style={{ background: GRAD }} className="w-full text-white font-bold py-3 rounded-lg shadow-md">
-              Guardar Registro
+            <button onClick={agregarRegistro} disabled={guardando} style={{ background: GRAD }}
+              className="w-full text-white font-bold py-3 rounded-lg shadow-md disabled:opacity-60">
+              {guardando ? "Guardando..." : "Guardar Registro"}
             </button>
           </div>
         </div>
@@ -149,8 +166,10 @@ function Finanzas({ finca_id }) {
                       onChange={(e) => setFormEditar((prev) => ({ ...prev, fecha: e.target.value }))} className={INPUT_CLASS} />
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <button onClick={() => guardarEdicion(registro)} style={{ background: GRAD }}
-                      className="text-white font-bold py-2 rounded-lg text-sm">💾 Guardar</button>
+                    <button onClick={() => guardarEdicion(registro)} disabled={guardando} style={{ background: GRAD }}
+                      className="text-white font-bold py-2 rounded-lg text-sm disabled:opacity-60">
+                      {guardando ? "..." : "💾 Guardar"}
+                    </button>
                     <button onClick={() => setEditandoId(null)}
                       className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 rounded-lg text-sm">Cancelar</button>
                   </div>
