@@ -25,7 +25,7 @@ function Login({ onRegister, onLogin }) {
       const respuesta = await loginFinca({ nombre: nombreFinca, clave });
       clearTimeout(timeoutId);
       if (respuesta.finca_id) {
-        onLogin({ nombreFinca: respuesta.nombre, finca_id: respuesta.finca_id });
+        onLogin({ nombreFinca: respuesta.nombre, finca_id: respuesta.finca_id, token: respuesta.token });
       } else {
         setError(respuesta.detail || "Nombre de finca o clave incorrectos");
       }

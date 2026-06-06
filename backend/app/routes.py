@@ -1,13 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from . import models
 from .database import get_db
+from .auth import crear_token, get_finca_id
 from pydantic import BaseModel
 from typing import Optional
 
 router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def verificar_finca(finca_id_recurso: int, finca_id_token: int):
+    if finca_id_recurso != finca_id_token:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Acceso denegado")
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
 
@@ -78,7 +83,7 @@ class ObreroCreate(BaseModel):
     comentario: Optional[str] = ""
     pagado: bool = False
 
-# ── Fincas ───────────────────────────────────────────────────────────────────
+# ── Fincas (rutas públicas) ───────────────────────────────────────────────────
 
 @router.post("/fincas/registro")
 def registrar_finca(finca: FincaCreate, db: Session = Depends(get_db)):
@@ -91,7 +96,8 @@ def registrar_finca(finca: FincaCreate, db: Session = Depends(get_db)):
     db.add(nueva_finca)
     db.commit()
     db.refresh(nueva_finca)
-    return {"mensaje": "Finca registrada exitosamente", "finca_id": nueva_finca.id}
+    token = crear_token(nueva_finca.id)
+    return {"mensaje": "Finca registrada exitosamente", "finca_id": nueva_finca.id, "token": token}
 
 @router.post("/fincas/login")
 def login_finca(datos: FincaLogin, db: Session = Depends(get_db)):
@@ -103,7 +109,6 @@ def login_finca(datos: FincaLogin, db: Session = Depends(get_db)):
     if finca.clave.startswith("$2b$") or finca.clave.startswith("$2a$"):
         clave_ok = pwd_context.verify(datos.clave, finca.clave)
     else:
-        # Contraseña en texto plano (registros anteriores) → migrar al hash
         if finca.clave == datos.clave:
             finca.clave = pwd_context.hash(datos.clave)
             db.commit()
@@ -111,16 +116,20 @@ def login_finca(datos: FincaLogin, db: Session = Depends(get_db)):
 
     if not clave_ok:
         raise HTTPException(status_code=401, detail="Nombre de finca o clave incorrectos")
-    return {"mensaje": "Login exitoso", "finca_id": finca.id, "nombre": finca.nombre}
+
+    token = crear_token(finca.id)
+    return {"mensaje": "Login exitoso", "finca_id": finca.id, "nombre": finca.nombre, "token": token}
 
 # ── Animales ─────────────────────────────────────────────────────────────────
 
 @router.get("/animales/{finca_id}")
-def listar_animales(finca_id: int, db: Session = Depends(get_db)):
+def listar_animales(finca_id: int, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    verificar_finca(finca_id, token_finca_id)
     return db.query(models.Animal).filter(models.Animal.finca_id == finca_id).all()
 
 @router.post("/animales")
-def crear_animal(animal: AnimalCreate, db: Session = Depends(get_db)):
+def crear_animal(animal: AnimalCreate, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    verificar_finca(animal.finca_id, token_finca_id)
     nuevo = models.Animal(**animal.dict())
     db.add(nuevo)
     db.commit()
@@ -128,10 +137,11 @@ def crear_animal(animal: AnimalCreate, db: Session = Depends(get_db)):
     return {"mensaje": "Animal registrado exitosamente", "animal_id": nuevo.id}
 
 @router.put("/animales/{animal_id}")
-def actualizar_animal(animal_id: int, datos: AnimalCreate, db: Session = Depends(get_db)):
+def actualizar_animal(animal_id: int, datos: AnimalCreate, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
     animal = db.query(models.Animal).filter(models.Animal.id == animal_id).first()
     if not animal:
         raise HTTPException(status_code=404, detail="Animal no encontrado")
+    verificar_finca(animal.finca_id, token_finca_id)
     for key, value in datos.dict().items():
         setattr(animal, key, value)
     db.commit()
@@ -139,10 +149,11 @@ def actualizar_animal(animal_id: int, datos: AnimalCreate, db: Session = Depends
     return {"mensaje": "Animal actualizado exitosamente"}
 
 @router.delete("/animales/{animal_id}")
-def eliminar_animal(animal_id: int, db: Session = Depends(get_db)):
+def eliminar_animal(animal_id: int, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
     animal = db.query(models.Animal).filter(models.Animal.id == animal_id).first()
     if not animal:
         raise HTTPException(status_code=404, detail="Animal no encontrado")
+    verificar_finca(animal.finca_id, token_finca_id)
     db.delete(animal)
     db.commit()
     return {"mensaje": "Animal eliminado exitosamente"}
@@ -150,11 +161,19 @@ def eliminar_animal(animal_id: int, db: Session = Depends(get_db)):
 # ── Historial Salud ──────────────────────────────────────────────────────────
 
 @router.get("/historial/{animal_id}")
-def listar_historial(animal_id: int, db: Session = Depends(get_db)):
+def listar_historial(animal_id: int, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    animal = db.query(models.Animal).filter(models.Animal.id == animal_id).first()
+    if not animal:
+        raise HTTPException(status_code=404, detail="Animal no encontrado")
+    verificar_finca(animal.finca_id, token_finca_id)
     return db.query(models.HistorialSalud).filter(models.HistorialSalud.animal_id == animal_id).all()
 
 @router.post("/historial")
-def agregar_historial(registro: HistorialSaludCreate, db: Session = Depends(get_db)):
+def agregar_historial(registro: HistorialSaludCreate, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    animal = db.query(models.Animal).filter(models.Animal.id == registro.animal_id).first()
+    if not animal:
+        raise HTTPException(status_code=404, detail="Animal no encontrado")
+    verificar_finca(animal.finca_id, token_finca_id)
     nuevo = models.HistorialSalud(**registro.dict())
     db.add(nuevo)
     db.commit()
@@ -162,10 +181,13 @@ def agregar_historial(registro: HistorialSaludCreate, db: Session = Depends(get_
     return {"mensaje": "Registro de salud agregado exitosamente", "id": nuevo.id}
 
 @router.put("/historial/{registro_id}")
-def actualizar_historial(registro_id: int, datos: HistorialSaludCreate, db: Session = Depends(get_db)):
+def actualizar_historial(registro_id: int, datos: HistorialSaludCreate, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
     registro = db.query(models.HistorialSalud).filter(models.HistorialSalud.id == registro_id).first()
     if not registro:
         raise HTTPException(status_code=404, detail="Registro no encontrado")
+    animal = db.query(models.Animal).filter(models.Animal.id == registro.animal_id).first()
+    if animal:
+        verificar_finca(animal.finca_id, token_finca_id)
     for key, value in datos.dict().items():
         setattr(registro, key, value)
     db.commit()
@@ -175,11 +197,13 @@ def actualizar_historial(registro_id: int, datos: HistorialSaludCreate, db: Sess
 # ── Insumos ──────────────────────────────────────────────────────────────────
 
 @router.get("/insumos/{finca_id}")
-def listar_insumos(finca_id: int, db: Session = Depends(get_db)):
+def listar_insumos(finca_id: int, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    verificar_finca(finca_id, token_finca_id)
     return db.query(models.Insumo).filter(models.Insumo.finca_id == finca_id).all()
 
 @router.post("/insumos")
-def crear_insumo(insumo: InsumoCreate, db: Session = Depends(get_db)):
+def crear_insumo(insumo: InsumoCreate, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    verificar_finca(insumo.finca_id, token_finca_id)
     nuevo = models.Insumo(**insumo.dict())
     db.add(nuevo)
     db.commit()
@@ -187,10 +211,11 @@ def crear_insumo(insumo: InsumoCreate, db: Session = Depends(get_db)):
     return {"mensaje": "Insumo agregado exitosamente", "insumo_id": nuevo.id}
 
 @router.put("/insumos/{insumo_id}")
-def actualizar_insumo(insumo_id: int, datos: InsumoCreate, db: Session = Depends(get_db)):
+def actualizar_insumo(insumo_id: int, datos: InsumoCreate, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
     insumo = db.query(models.Insumo).filter(models.Insumo.id == insumo_id).first()
     if not insumo:
         raise HTTPException(status_code=404, detail="Insumo no encontrado")
+    verificar_finca(insumo.finca_id, token_finca_id)
     for key, value in datos.dict().items():
         setattr(insumo, key, value)
     db.commit()
@@ -200,11 +225,13 @@ def actualizar_insumo(insumo_id: int, datos: InsumoCreate, db: Session = Depends
 # ── Finanzas ─────────────────────────────────────────────────────────────────
 
 @router.get("/finanzas/{finca_id}")
-def listar_finanzas(finca_id: int, db: Session = Depends(get_db)):
+def listar_finanzas(finca_id: int, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    verificar_finca(finca_id, token_finca_id)
     return db.query(models.Finanza).filter(models.Finanza.finca_id == finca_id).all()
 
 @router.post("/finanzas")
-def crear_finanza(finanza: FinanzaCreate, db: Session = Depends(get_db)):
+def crear_finanza(finanza: FinanzaCreate, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    verificar_finca(finanza.finca_id, token_finca_id)
     nueva = models.Finanza(**finanza.dict())
     db.add(nueva)
     db.commit()
@@ -212,10 +239,11 @@ def crear_finanza(finanza: FinanzaCreate, db: Session = Depends(get_db)):
     return {"mensaje": "Registro financiero agregado exitosamente", "id": nueva.id}
 
 @router.put("/finanzas/{finanza_id}")
-def actualizar_finanza(finanza_id: int, datos: FinanzaCreate, db: Session = Depends(get_db)):
+def actualizar_finanza(finanza_id: int, datos: FinanzaCreate, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
     finanza = db.query(models.Finanza).filter(models.Finanza.id == finanza_id).first()
     if not finanza:
         raise HTTPException(status_code=404, detail="Registro no encontrado")
+    verificar_finca(finanza.finca_id, token_finca_id)
     for key, value in datos.dict().items():
         setattr(finanza, key, value)
     db.commit()
@@ -225,11 +253,13 @@ def actualizar_finanza(finanza_id: int, datos: FinanzaCreate, db: Session = Depe
 # ── Lechería ─────────────────────────────────────────────────────────────────
 
 @router.get("/leche/{finca_id}")
-def listar_leche(finca_id: int, db: Session = Depends(get_db)):
+def listar_leche(finca_id: int, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    verificar_finca(finca_id, token_finca_id)
     return db.query(models.RegistroLeche).filter(models.RegistroLeche.finca_id == finca_id).all()
 
 @router.post("/leche")
-def crear_registro_leche(registro: RegistroLecheCreate, db: Session = Depends(get_db)):
+def crear_registro_leche(registro: RegistroLecheCreate, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    verificar_finca(registro.finca_id, token_finca_id)
     nuevo = models.RegistroLeche(**registro.dict())
     db.add(nuevo)
     db.commit()
@@ -237,10 +267,11 @@ def crear_registro_leche(registro: RegistroLecheCreate, db: Session = Depends(ge
     return {"mensaje": "Registro de leche agregado exitosamente", "id": nuevo.id}
 
 @router.put("/leche/{registro_id}")
-def actualizar_leche(registro_id: int, datos: RegistroLecheCreate, db: Session = Depends(get_db)):
+def actualizar_leche(registro_id: int, datos: RegistroLecheCreate, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
     registro = db.query(models.RegistroLeche).filter(models.RegistroLeche.id == registro_id).first()
     if not registro:
         raise HTTPException(status_code=404, detail="Registro no encontrado")
+    verificar_finca(registro.finca_id, token_finca_id)
     for key, value in datos.dict().items():
         setattr(registro, key, value)
     db.commit()
@@ -250,11 +281,13 @@ def actualizar_leche(registro_id: int, datos: RegistroLecheCreate, db: Session =
 # ── Obreros ──────────────────────────────────────────────────────────────────
 
 @router.get("/obreros/{finca_id}")
-def listar_obreros(finca_id: int, db: Session = Depends(get_db)):
+def listar_obreros(finca_id: int, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    verificar_finca(finca_id, token_finca_id)
     return db.query(models.Obrero).filter(models.Obrero.finca_id == finca_id).all()
 
 @router.post("/obreros")
-def crear_obrero(obrero: ObreroCreate, db: Session = Depends(get_db)):
+def crear_obrero(obrero: ObreroCreate, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    verificar_finca(obrero.finca_id, token_finca_id)
     nuevo = models.Obrero(**obrero.dict())
     db.add(nuevo)
     db.commit()
@@ -262,10 +295,11 @@ def crear_obrero(obrero: ObreroCreate, db: Session = Depends(get_db)):
     return {"mensaje": "Obrero registrado exitosamente", "id": nuevo.id}
 
 @router.put("/obreros/{obrero_id}")
-def actualizar_obrero(obrero_id: int, datos: ObreroCreate, db: Session = Depends(get_db)):
+def actualizar_obrero(obrero_id: int, datos: ObreroCreate, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
     obrero = db.query(models.Obrero).filter(models.Obrero.id == obrero_id).first()
     if not obrero:
         raise HTTPException(status_code=404, detail="Obrero no encontrado")
+    verificar_finca(obrero.finca_id, token_finca_id)
     for key, value in datos.dict().items():
         setattr(obrero, key, value)
     db.commit()

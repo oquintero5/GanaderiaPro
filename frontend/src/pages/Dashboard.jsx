@@ -57,7 +57,7 @@ const NAV_ITEMS = [
   { key: "finanzas", label: "💰 Finanzas" },
 ];
 
-function Dashboard({ finca }) {
+function Dashboard({ finca, onLogout }) {
   const [animales, setAnimales] = useState([]);
   const [mostrarFormAnimal, setMostrarFormAnimal] = useState(false);
   const [vista, setVista] = useState("inicio");
@@ -246,8 +246,19 @@ function Dashboard({ finca }) {
       )}
 
       <div style={{ background: GRAD }} className="text-white py-4 px-4 shadow-lg">
-        <h1 className="text-2xl font-bold text-center drop-shadow">🐄 {finca?.nombreFinca || "Mi Finca"}</h1>
-        <p className="text-center text-yellow-100 text-sm mt-1 drop-shadow">AgroGanaderíaPro</p>
+        <div className="flex items-center justify-between max-w-4xl mx-auto">
+          <div className="flex-1" />
+          <div className="text-center">
+            <h1 className="text-2xl font-bold drop-shadow">🐄 {finca?.nombreFinca || "Mi Finca"}</h1>
+            <p className="text-yellow-100 text-sm mt-1 drop-shadow">AgroGanaderíaPro</p>
+          </div>
+          <div className="flex-1 flex justify-end">
+            <button onClick={onLogout}
+              className="text-yellow-100 hover:text-white text-sm font-semibold opacity-80 hover:opacity-100 transition">
+              Salir →
+            </button>
+          </div>
+        </div>
       </div>
 
       {animalSeleccionado ? (

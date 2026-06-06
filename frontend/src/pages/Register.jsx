@@ -20,7 +20,7 @@ const paises = {
   "Chile": ["Los Lagos", "La Araucanía", "Los Ríos", "Aysén", "Biobío"],
 };
 
-function Register({ onBack }) {
+function Register({ onBack, onLogin }) {
   const [form, setForm] = useState({
     nombreFinca: "",
     nombre: "",
@@ -83,8 +83,11 @@ const [cargando, setCargando] = useState(false);
         clave: form.clave,
       });
       if (respuesta.finca_id) {
-        alert("¡Finca registrada exitosamente! Ya puedes iniciar sesión.");
-        onBack();
+        if (onLogin && respuesta.token) {
+          onLogin({ nombreFinca: form.nombreFinca, finca_id: respuesta.finca_id, token: respuesta.token });
+        } else {
+          onBack();
+        }
       } else {
         setError(respuesta.detail || "Error al registrar la finca");
       }
