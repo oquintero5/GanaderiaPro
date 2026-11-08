@@ -2,15 +2,15 @@ import { useState } from "react";
 import { loginFinca } from "../api";
 
 function Login({ onRegister, onLogin }) {
-  const [nombreFinca, setNombreFinca] = useState("");
+  const [correo, setCorreo] = useState("");
   const [clave, setClave] = useState("");
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
-    if (!nombreFinca || !clave) {
-      setError("Por favor ingresa el nombre de la finca y la clave");
+    if (!correo.trim() || !clave) {
+      setError("Por favor ingresa el correo y la clave");
       return;
     }
     setCargando(true);
@@ -22,12 +22,14 @@ function Login({ onRegister, onLogin }) {
     }, 15000);
 
     try {
-      const respuesta = await loginFinca({ nombre: nombreFinca, clave });
+      const respuesta = await loginFinca({ correo, clave });
       clearTimeout(timeoutId);
       if (respuesta.finca_id) {
         onLogin({ nombreFinca: respuesta.nombre, finca_id: respuesta.finca_id, token: respuesta.token });
+      } else if (respuesta.detail && typeof respuesta.detail !== "string") {
+        setError("Revisa el correo y la clave");
       } else {
-        setError(respuesta.detail || "Nombre de finca o clave incorrectos");
+        setError(respuesta.detail || "Correo o clave incorrectos");
       }
     } catch (e) {
       clearTimeout(timeoutId);
@@ -425,16 +427,16 @@ function Login({ onRegister, onLogin }) {
           )}
 
           <div className="login-field">
-            <label className="login-label">Nombre de la Finca</label>
+            <label className="login-label">Correo</label>
             <div className="login-input-wrap">
               <input
                 className="login-input"
-                type="text"
-                placeholder="Ej: Finca La Esperanza"
-                value={nombreFinca}
-                onChange={(e) => setNombreFinca(e.target.value)}
+                type="email"
+                placeholder="tucorreo@ejemplo.com"
+                value={correo}
+                onChange={(e) => setCorreo(e.target.value)}
                 onKeyDown={handleKeyDown}
-                autoComplete="off"
+                autoComplete="email"
                 autoCapitalize="none"
               />
             </div>

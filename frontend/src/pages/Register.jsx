@@ -51,7 +51,7 @@ const [cargando, setCargando] = useState(false);
   const validarClave = (clave) => {
     const tieneLetras = /[a-zA-Z]/.test(clave);
     const tieneNumeros = /[0-9]/.test(clave);
-    return clave.length >= 6 && tieneLetras && tieneNumeros;
+    return clave.length >= 8 && tieneLetras && tieneNumeros;
   };
 
   const handleRegister = async () => {
@@ -62,7 +62,7 @@ const [cargando, setCargando] = useState(false);
       return;
     }
     if (!validarClave(form.clave)) {
-      setError("La clave debe tener al menos 6 caracteres con letras y números");
+      setError("La clave debe tener al menos 8 caracteres con letras y números");
       return;
     }
     if (form.clave !== form.confirmarClave) {
@@ -89,6 +89,11 @@ const [cargando, setCargando] = useState(false);
         } else {
           onBack();
         }
+      } else if (respuesta.detail && typeof respuesta.detail !== "string") {
+        setError("Revisa los datos: la clave debe tener al menos 8 caracteres y el correo debe ser válido");
+      } else if (respuesta.detail && respuesta.detail.startsWith("Demasiados intentos")) {
+        // api.js no expone el código HTTP: el 429 se reconoce por el mensaje del backend
+        setError("Demasiados intentos, espera un minuto");
       } else {
         setError(respuesta.detail || "Error al registrar la finca");
       }
@@ -138,7 +143,7 @@ const [cargando, setCargando] = useState(false);
               </div>
 
               <input name="celular" placeholder="Número de Celular *" value={form.celular} onChange={handleChange} className={inputClass} />
-              <input name="correo" type="email" placeholder="Correo Electrónico *" value={form.correo} onChange={handleChange} className={inputClass} />
+              <input name="correo" type="email" autoComplete="email" placeholder="Correo Electrónico *" value={form.correo} onChange={handleChange} className={inputClass} />
 
               <select name="pais" value={form.pais} onChange={handleChange} className={inputClass}>
                 <option value="">Selecciona tu País *</option>
@@ -157,7 +162,7 @@ const [cargando, setCargando] = useState(false);
                 <input name="vereda" placeholder="Vereda *" value={form.vereda} onChange={handleChange} className={inputClass} />
               </div>
 
-              <input name="clave" type="password" placeholder="Clave (mín. 6 caracteres, letras y números) *" value={form.clave} onChange={handleChange} className={inputClass} />
+              <input name="clave" type="password" placeholder="Clave (mín. 8 caracteres, letras y números) *" value={form.clave} onChange={handleChange} className={inputClass} />
               <input name="confirmarClave" type="password" placeholder="Confirmar Clave *" value={form.confirmarClave} onChange={handleChange} className={inputClass} />
 
               <button onClick={handleRegister} disabled={cargando} style={{ background: GRAD }}

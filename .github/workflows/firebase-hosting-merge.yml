@@ -11,7 +11,7 @@ jobs:
       - name: Install and Build
         working-directory: frontend
         env:
-          VITE_API_URL: https://agroganaderiapro-backend-944496395089.us-central1.run.app
+          VITE_API_URL: https://ganaderiapro-backend-944496395089.us-central1.run.app
         run: npm ci && npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:

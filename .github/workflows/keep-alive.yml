@@ -13,7 +13,7 @@ jobs:
         run: |
           for i in 1 2 3; do
             code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 \
-              https://agroganaderiapro-backend-944496395089.us-central1.run.app/health/db)
+              https://ganaderiapro-backend-944496395089.us-central1.run.app/health/db)
             echo "Intento $i: HTTP $code"
             [ "$code" = "200" ] && exit 0
             sleep 30

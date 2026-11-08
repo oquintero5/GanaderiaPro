@@ -1,14 +1,10 @@
-import os
 from datetime import datetime, timedelta, timezone
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from .config import variable_requerida
 
-# La clave para firmar los tokens SIEMPRE viene de la variable JWT_SECRET.
-# Un valor por defecto escrito aquí permitiría falsificar sesiones (el repo es público).
-SECRET_KEY = os.environ.get("JWT_SECRET")
-if not SECRET_KEY:
-    raise RuntimeError("Falta la variable de entorno JWT_SECRET")
+SECRET_KEY = variable_requerida("JWT_SECRET")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 30
 

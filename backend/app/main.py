@@ -1,32 +1,46 @@
-import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+import logging
 from sqlalchemy import text
+from slowapi.errors import RateLimitExceeded
+from .config import ALLOWED_ORIGINS, MOSTRAR_DOCS
 from .database import crear_tablas, engine
-from .routes import router
+from .routes import router, limiter
 
-log = logging.getLogger("agroganaderiapro")
+app = FastAPI(
+    title="AgroGanaderíaPro API",
+    docs_url="/docs" if MOSTRAR_DOCS else None,
+    redoc_url="/redoc" if MOSTRAR_DOCS else None,
+    openapi_url="/openapi.json" if MOSTRAR_DOCS else None,
+)
+app.state.limiter = limiter
 
-app = FastAPI(title="AgroGanaderíaPro API")
+@app.exception_handler(RateLimitExceeded)
+def limite_excedido(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(status_code=429, content={"detail": "Demasiados intentos. Intenta de nuevo en un minuto."})
+
+@app.exception_handler(RequestValidationError)
+def datos_invalidos(request: Request, exc: RequestValidationError):
+    # Sin "input": no se devuelve la clave ni valores que no se pueden serializar (NaN, texto mal formado)
+    errores = [{"loc": e["loc"], "msg": e["msg"], "type": e["type"]} for e in exc.errors()]
+    return JSONResponse(status_code=422, content={"detail": errores})
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "https://agroganaderiapro.web.app",
-        "https://agroganaderiapro.firebaseapp.com",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
+
+log = logging.getLogger("agroganaderiapro")
 
 @app.on_event("startup")
 def startup():
-    # Si la base de datos no responde (p. ej. Supabase pausado), el servidor
-    # igual arranca y /health/db muestra el problema, en vez de que el
-    # contenedor se caiga y Cloud Run devuelva 503 sin explicación.
+    # Si la base no responde (p. ej. Supabase pausado) el servidor igual arranca
+    # y /health/db muestra el problema, en vez de que Cloud Run devuelva 503.
     try:
         crear_tablas()
     except Exception as e:
@@ -44,7 +58,7 @@ def health():
 
 @app.get("/health/db")
 def health_db():
-    # Hace una consulta real: sirve para el monitoreo y para mantener Supabase activo.
+    # Consulta real: sirve para monitoreo y para mantener Supabase activo
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))

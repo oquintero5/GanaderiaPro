@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || "https://agroganaderiapro-backend-944496395089.us-central1.run.app";
+const API_URL = import.meta.env.VITE_API_URL || "https://ganaderiapro-backend-944496395089.us-central1.run.app";
 
 let _token = null;
 
