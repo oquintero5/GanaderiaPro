@@ -67,3 +67,12 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Python
+__pycache__/
+*.pyc
+*.db
+backend/.env
+
+# Build
+frontend/dist/
