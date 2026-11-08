@@ -1,4 +1,7 @@
-const API_URL = import.meta.env.VITE_API_URL || "https://ganaderiapro-backend-944496395089.us-central1.run.app";
+// En local (npm run dev) usa el backend de tu PC; en producción, el servidor publicado.
+// VITE_API_URL, si existe, tiene prioridad sobre ambos.
+const API_URL = import.meta.env.VITE_API_URL
+  || (import.meta.env.DEV ? "http://localhost:8001" : "https://ganaderiapro-backend-944496395089.us-central1.run.app");
 const TIEMPO_MAXIMO_MS = 20000;
 
 let _token = null;
