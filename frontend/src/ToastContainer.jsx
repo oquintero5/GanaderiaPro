@@ -16,8 +16,9 @@ export function ToastContainer() {
 
   useEffect(() => {
     setToastListener((toast) => {
-      setToasts((prev) => [...prev, toast]);
-      setTimeout(() => remove(toast.id), 3500);
+      // Máximo 2 avisos a la vez para no tapar la pantalla; los errores duran más para alcanzar a leerlos
+      setToasts((prev) => [...prev, toast].slice(-2));
+      setTimeout(() => remove(toast.id), toast.type === "error" ? 5000 : 2800);
     });
     return () => setToastListener(null);
   }, [remove]);

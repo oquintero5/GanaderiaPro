@@ -6,6 +6,11 @@ import { ModalConfirmar } from "../ModalConfirmar";
 
 const CATEGORIAS_INGRESO = ["Venta de Animal","Venta de Leche","Venta de Cría","Otro Ingreso"];
 const CATEGORIAS_GASTO = ["Compra de Animal","Compra de Insumos","Veterinario","Alimentación","Mano de Obra","Transporte","Otro Gasto"];
+// Ingresos/gastos que crea el sistema (leche por quincena, pago de obreros) llevan una marca al final
+const MARCA_AUTOMATICA = /\s*\((leche \d{4}-\d{2}-\d{2}|obrero #\d+)\)$/;
+const esAutomatico = (r) => MARCA_AUTOMATICA.test(r.descripcion || "");
+const descripcionVisible = (r) => (r.descripcion || "").replace(MARCA_AUTOMATICA, "");
+
 const FORM_INICIAL = { tipo: "", categoria: "", descripcion: "", monto: "", fecha: "" };
 
 function Finanzas({ finca_id }) {
@@ -172,20 +177,24 @@ function Finanzas({ finca_id }) {
                 ) : (
                   <div className="flex justify-between items-center gap-2">
                     <div className="flex-1 min-w-0">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${esIngreso ? "bg-blue-50 text-blue-700" : "bg-red-50 text-red-600"}`}>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${esIngreso ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
                         {esIngreso ? "💰 Ingreso" : "💸 Gasto"}
                       </span>
                       <p className="font-semibold text-gray-800 text-sm mt-1">{registro.categoria}</p>
-                      {registro.descripcion && <p className="text-gray-400 text-xs truncate">{registro.descripcion}</p>}
+                      {registro.descripcion && <p className="text-gray-400 text-xs truncate">{descripcionVisible(registro)}</p>}
                       <p className="text-gray-400 text-xs">📅 {registro.fecha}</p>
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <p className={`text-base font-bold whitespace-nowrap ${esIngreso ? "text-emerald-600" : "text-red-600"}`}>
                         ${parseFloat(registro.monto).toLocaleString()}
                       </p>
-                      <button onClick={() => { setEditandoId(registro.id); setFormEditar({ tipo: registro.tipo, categoria: registro.categoria, descripcion: registro.descripcion || "", monto: registro.monto, fecha: registro.fecha }); }}
-                        className="text-xs font-medium hover:underline" style={{ color: COLORS.primaryLight }}>✏️ Editar</button>
-                      <button onClick={() => setPorEliminar(registro)} className="text-xs font-medium hover:underline text-red-600">🗑️ Eliminar</button>
+                      {esAutomatico(registro) ? (
+                        <span className="text-xs text-gray-400 text-right" title="Se actualiza solo desde Lechería u Obreros">🔄 Automático</span>
+                      ) : (<>
+                        <button onClick={() => { setEditandoId(registro.id); setFormEditar({ tipo: registro.tipo, categoria: registro.categoria, descripcion: registro.descripcion || "", monto: registro.monto, fecha: registro.fecha }); }}
+                          className="text-xs font-medium hover:underline" style={{ color: COLORS.primaryLight }}>✏️ Editar</button>
+                        <button onClick={() => setPorEliminar(registro)} className="text-xs font-medium hover:underline text-red-600">🗑️ Eliminar</button>
+                      </>)}
                     </div>
                   </div>
                 )}

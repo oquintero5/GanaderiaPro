@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Path, Request, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -124,8 +124,14 @@ class RegistroLecheCreate(BaseModel):
     finca_id: Id
     fecha: Fecha
     litros: Numero
+    # Opcional: si no se envía, se usa el precio ya registrado en esa quincena
+    precio_litro: Optional[Numero] = None
+    frecuencia_pago: Optional[TextoCorto] = "Quincenal"
+
+class PrecioQuincena(BaseModel):
+    finca_id: Id
+    fecha: Fecha          # cualquier día de la quincena
     precio_litro: Numero
-    frecuencia_pago: Optional[TextoCorto] = "Mensual"
 
 class ObreroCreate(BaseModel):
     finca_id: Id
@@ -308,6 +314,61 @@ def actualizar_finanza(finanza_id: IdRuta, datos: FinanzaCreate, db: Session = D
     return {"mensaje": "Registro financiero actualizado exitosamente"}
 
 # ── Lechería ─────────────────────────────────────────────────────────────────
+# La leche se paga por quincena (1-15 y 16-fin de mes): el precio del litro es el
+# mismo para toda la quincena, y cada quincena genera UN ingreso en Finanzas que
+# se recalcula solo cada vez que se agrega, edita o borra un registro de leche.
+
+MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
+         "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+
+def quincena_de(fecha: str):
+    d = date.fromisoformat(fecha)
+    if d.day <= 15:
+        inicio, fin, nombre = d.replace(day=1), d.replace(day=15), "1.ª quincena"
+    else:
+        siguiente = (d.replace(day=28) + timedelta(days=4)).replace(day=1)
+        inicio, fin, nombre = d.replace(day=16), siguiente - timedelta(days=1), "2.ª quincena"
+    return inicio, fin, f"{nombre} de {MESES[d.month - 1]} {d.year}"
+
+def registros_quincena(db: Session, finca_id: int, fecha: str):
+    inicio, fin, _ = quincena_de(fecha)
+    return db.query(models.RegistroLeche).filter(
+        models.RegistroLeche.finca_id == finca_id,
+        models.RegistroLeche.fecha >= inicio.isoformat(),
+        models.RegistroLeche.fecha <= fin.isoformat(),
+    )
+
+def precio_de_quincena(db: Session, finca_id: int, fecha: str):
+    ultimo = registros_quincena(db, finca_id, fecha).order_by(models.RegistroLeche.id.desc()).first()
+    return ultimo.precio_litro if ultimo else None
+
+def marca_leche(fecha: str) -> str:
+    # No hay columna que enlace el ingreso con la quincena: se reconoce por esta marca
+    return f"(leche {quincena_de(fecha)[0].isoformat()})"
+
+def sincronizar_ingreso_leche(db: Session, finca_id: int, fecha: str):
+    db.flush()
+    _, fin, etiqueta = quincena_de(fecha)
+    regs = registros_quincena(db, finca_id, fecha).all()
+    litros = sum(r.litros or 0 for r in regs)
+    total = sum((r.litros or 0) * (r.precio_litro or 0) for r in regs)
+    marca = marca_leche(fecha)
+    ingreso = db.query(models.Finanza).filter(
+        models.Finanza.finca_id == finca_id,
+        models.Finanza.tipo == "Ingreso",
+        models.Finanza.categoria == "Venta de Leche",
+        models.Finanza.descripcion.endswith(marca, autoescape=True),
+    ).order_by(models.Finanza.id).first()
+    if not regs:
+        if ingreso:
+            db.delete(ingreso)
+        return
+    if not ingreso:
+        ingreso = models.Finanza(finca_id=finca_id, tipo="Ingreso", categoria="Venta de Leche")
+        db.add(ingreso)
+    ingreso.descripcion = f"Leche {etiqueta}: {litros:g} L (automático) {marca}"
+    ingreso.monto = total
+    ingreso.fecha = fin.isoformat()
 
 @router.get("/leche/{finca_id}")
 def listar_leche(finca_id: IdRuta, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
@@ -317,11 +378,29 @@ def listar_leche(finca_id: IdRuta, db: Session = Depends(get_db), token_finca_id
 @router.post("/leche")
 def crear_registro_leche(registro: RegistroLecheCreate, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
     verificar_finca(registro.finca_id, token_finca_id)
-    nuevo = models.RegistroLeche(**registro.dict())
+    datos = registro.dict()
+    if datos["precio_litro"] is None:
+        datos["precio_litro"] = precio_de_quincena(db, registro.finca_id, registro.fecha)
+        if datos["precio_litro"] is None:
+            raise HTTPException(status_code=400, detail="Es el primer registro de esta quincena: ingresa el precio del litro")
+    nuevo = models.RegistroLeche(**datos)
     db.add(nuevo)
+    sincronizar_ingreso_leche(db, registro.finca_id, registro.fecha)
     db.commit()
     db.refresh(nuevo)
-    return {"mensaje": "Registro de leche agregado exitosamente", "id": nuevo.id}
+    return {"mensaje": "Registro de leche agregado exitosamente", "id": nuevo.id, "precio_litro": nuevo.precio_litro}
+
+@router.put("/leche/precio-quincena")
+def cambiar_precio_quincena(datos: PrecioQuincena, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    verificar_finca(datos.finca_id, token_finca_id)
+    regs = registros_quincena(db, datos.finca_id, datos.fecha).all()
+    if not regs:
+        raise HTTPException(status_code=404, detail="No hay registros de leche en esa quincena")
+    for r in regs:
+        r.precio_litro = datos.precio_litro
+    sincronizar_ingreso_leche(db, datos.finca_id, datos.fecha)
+    db.commit()
+    return {"mensaje": f"Precio actualizado en {len(regs)} registros de la quincena"}
 
 @router.put("/leche/{registro_id}")
 def actualizar_leche(registro_id: IdRuta, datos: RegistroLecheCreate, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
@@ -329,8 +408,20 @@ def actualizar_leche(registro_id: IdRuta, datos: RegistroLecheCreate, db: Sessio
     if not registro:
         raise HTTPException(status_code=404, detail="Registro no encontrado")
     verificar_finca(registro.finca_id, token_finca_id)
-    for key, value in datos.dict(exclude={"finca_id"}).items():
+    fecha_anterior = registro.fecha
+    cambios = datos.dict(exclude={"finca_id"})
+    if cambios["precio_litro"] is None:
+        cambios.pop("precio_litro")
+        # Si el registro pasa a otra quincena, toma el precio de esa quincena
+        if quincena_de(fecha_anterior)[0] != quincena_de(datos.fecha)[0]:
+            precio_destino = precio_de_quincena(db, registro.finca_id, datos.fecha)
+            if precio_destino is not None:
+                cambios["precio_litro"] = precio_destino
+    for key, value in cambios.items():
         setattr(registro, key, value)
+    sincronizar_ingreso_leche(db, registro.finca_id, registro.fecha)
+    if quincena_de(fecha_anterior)[0] != quincena_de(registro.fecha)[0]:
+        sincronizar_ingreso_leche(db, registro.finca_id, fecha_anterior)
     db.commit()
     db.refresh(registro)
     return {"mensaje": "Registro de leche actualizado exitosamente"}
@@ -447,7 +538,12 @@ def eliminar_leche(registro_id: IdRuta, db: Session = Depends(get_db), token_fin
     registro = db.query(models.RegistroLeche).filter(models.RegistroLeche.id == registro_id).first()
     if not registro:
         raise HTTPException(status_code=404, detail="Registro no encontrado")
-    return _borrar(db, registro, token_finca_id, "Registro de leche eliminado")
+    verificar_finca(registro.finca_id, token_finca_id)
+    finca_id, fecha = registro.finca_id, registro.fecha
+    db.delete(registro)
+    sincronizar_ingreso_leche(db, finca_id, fecha)
+    db.commit()
+    return {"mensaje": "Registro de leche eliminado"}
 
 @router.delete("/obreros/{obrero_id}")
 def eliminar_obrero(obrero_id: IdRuta, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):

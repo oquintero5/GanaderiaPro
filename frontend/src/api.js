@@ -95,6 +95,7 @@ export const listarLeche        = (finca_id)  => req(`/leche/${finca_id}`);
 export const crearRegistroLeche = (datos)     => post("/leche", datos);
 export const actualizarLeche    = (id, datos) => put(`/leche/${id}`, datos);
 export const eliminarLeche      = (id)        => del(`/leche/${id}`);
+export const cambiarPrecioQuincena = (datos) => put("/leche/precio-quincena", datos);
 
 // Obreros
 export const listarObreros        = (finca_id)  => req(`/obreros/${finca_id}`);
