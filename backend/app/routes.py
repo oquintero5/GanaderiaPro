@@ -290,6 +290,9 @@ def actualizar_insumo(insumo_id: IdRuta, datos: InsumoCreate, db: Session = Depe
 @router.get("/finanzas/{finca_id}")
 def listar_finanzas(finca_id: IdRuta, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
     verificar_finca(finca_id, token_finca_id)
+    # Recalcula los ingresos de leche de todas las quincenas (incluye registros anteriores a esta función)
+    sincronizar_toda_la_leche(db, finca_id)
+    db.commit()
     return db.query(models.Finanza).filter(models.Finanza.finca_id == finca_id).all()
 
 @router.post("/finanzas")
@@ -369,6 +372,21 @@ def sincronizar_ingreso_leche(db: Session, finca_id: int, fecha: str):
     ingreso.descripcion = f"Leche {etiqueta}: {litros:g} L (automático) {marca}"
     ingreso.monto = total
     ingreso.fecha = fin.isoformat()
+
+def sincronizar_toda_la_leche(db: Session, finca_id: int):
+    fechas = [f for (f,) in db.query(models.RegistroLeche.fecha).filter(models.RegistroLeche.finca_id == finca_id).all()]
+    inicios = {quincena_de(f)[0].isoformat(): f for f in fechas if f}
+    for fecha in inicios.values():
+        sincronizar_ingreso_leche(db, finca_id, fecha)
+    # Ingresos automáticos de quincenas que ya no tienen leche
+    for ingreso in db.query(models.Finanza).filter(
+        models.Finanza.finca_id == finca_id,
+        models.Finanza.categoria == "Venta de Leche",
+        models.Finanza.descripcion.like("%(leche %)"),
+    ).all():
+        inicio = ingreso.descripcion.rsplit("(leche ", 1)[-1].rstrip(")")
+        if inicio not in inicios:
+            db.delete(ingreso)
 
 @router.get("/leche/{finca_id}")
 def listar_leche(finca_id: IdRuta, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
