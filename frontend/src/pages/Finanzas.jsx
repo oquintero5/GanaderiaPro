@@ -73,7 +73,7 @@ function Finanzas({ finca_id }) {
 
   if (cargando) return (
     <div className="text-center py-12 text-gray-400">
-      <div className="inline-block w-7 h-7 border-4 border-gray-200 border-t-green-600 rounded-full animate-spin mb-3" />
+      <div className="inline-block w-7 h-7 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-3" />
       <p className="text-sm">Cargando finanzas...</p>
     </div>
   );
@@ -97,7 +97,7 @@ function Finanzas({ finca_id }) {
           <p className="text-gray-400 text-xs mb-1">Gastos</p>
           <p className="text-lg font-bold text-red-600">${totalGastos.toLocaleString()}</p>
         </div>
-        <div className={`rounded-xl shadow-sm border p-4 text-center ${balance >= 0 ? "bg-green-50 border-green-100" : "bg-red-50 border-red-100"}`}>
+        <div className={`rounded-xl shadow-sm border p-4 text-center ${balance >= 0 ? "bg-blue-50 border-blue-100" : "bg-red-50 border-red-100"}`}>
           <p className="text-gray-400 text-xs mb-1">Balance</p>
           <p className="text-lg font-bold" style={{ color: balance >= 0 ? COLORS.primary : COLORS.red }}>${balance.toLocaleString()}</p>
         </div>
@@ -172,7 +172,7 @@ function Finanzas({ finca_id }) {
                 ) : (
                   <div className="flex justify-between items-center gap-2">
                     <div className="flex-1 min-w-0">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${esIngreso ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${esIngreso ? "bg-blue-50 text-blue-700" : "bg-red-50 text-red-600"}`}>
                         {esIngreso ? "💰 Ingreso" : "💸 Gasto"}
                       </span>
                       <p className="font-semibold text-gray-800 text-sm mt-1">{registro.categoria}</p>

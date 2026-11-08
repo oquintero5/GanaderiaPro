@@ -82,7 +82,7 @@ function Obreros({ finca_id }) {
 
   if (cargando) return (
     <div className="text-center py-12 text-gray-400">
-      <div className="inline-block w-7 h-7 border-4 border-gray-200 border-t-green-600 rounded-full animate-spin mb-3" />
+      <div className="inline-block w-7 h-7 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-3" />
       <p className="text-sm">Cargando obreros...</p>
     </div>
   );
@@ -128,8 +128,8 @@ function Obreros({ finca_id }) {
               <input name="precio_jornal" type="number" placeholder="Precio jornal *" value={form.precio_jornal} onChange={handleChange} className={INPUT_CLASS} />
             </div>
             {form.dias_trabajados && form.precio_jornal && (
-              <div className="bg-green-50 border border-green-100 rounded-lg px-4 py-3">
-                <p className="text-green-800 font-semibold text-center text-sm">Total a pagar: ${totalAPagar.toLocaleString()}</p>
+              <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-3">
+                <p className="text-blue-800 font-semibold text-center text-sm">Total a pagar: ${totalAPagar.toLocaleString()}</p>
               </div>
             )}
             <input name="fecha" type="date" value={form.fecha} onChange={handleChange} className={INPUT_CLASS} />
@@ -161,8 +161,8 @@ function Obreros({ finca_id }) {
                     <input type="number" placeholder="Jornal" value={formEditar.precio_jornal} onChange={(e) => setFormEditar((prev) => ({ ...prev, precio_jornal: e.target.value }))} className={INPUT_CLASS} />
                   </div>
                   {formEditar.dias_trabajados && formEditar.precio_jornal && (
-                    <div className="bg-green-50 border border-green-100 rounded-lg px-4 py-2">
-                      <p className="text-green-800 font-semibold text-center text-sm">Total: ${totalEditarAPagar.toLocaleString()}</p>
+                    <div className="bg-blue-50 border border-blue-100 rounded-lg px-4 py-2">
+                      <p className="text-blue-800 font-semibold text-center text-sm">Total: ${totalEditarAPagar.toLocaleString()}</p>
                     </div>
                   )}
                   <input type="date" value={formEditar.fecha} onChange={(e) => setFormEditar((prev) => ({ ...prev, fecha: e.target.value }))} className={INPUT_CLASS} />

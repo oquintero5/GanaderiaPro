@@ -82,7 +82,7 @@ function Lecheria({ finca_id }) {
 
   if (cargando) return (
     <div className="text-center py-12 text-gray-400">
-      <div className="inline-block w-7 h-7 border-4 border-gray-200 border-t-green-600 rounded-full animate-spin mb-3" />
+      <div className="inline-block w-7 h-7 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-3" />
       <p className="text-sm">Cargando lechería...</p>
     </div>
   );
@@ -112,13 +112,13 @@ function Lecheria({ finca_id }) {
       </div>
 
       {registros.length > 0 && (
-        <div className="bg-green-50 border border-green-100 rounded-xl p-4 mb-5">
-          <h3 className="font-semibold text-green-800 text-sm mb-3">💵 Pago Estimado por Frecuencia</h3>
+        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-5">
+          <h3 className="font-semibold text-blue-800 text-sm mb-3">💵 Pago Estimado por Frecuencia</h3>
           <div className="grid grid-cols-3 gap-3">
             {[["Semanal", 7], ["Quincenal", 15], ["Mensual", 30]].map(([label, dias]) => (
-              <div key={label} className="bg-white rounded-lg p-3 text-center border border-green-100">
+              <div key={label} className="bg-white rounded-lg p-3 text-center border border-blue-100">
                 <p className="text-gray-400 text-xs">{label}</p>
-                <p className="text-base font-bold mt-1" style={{ color: COLORS.primary }}>${(totalIngresos / (registros.length / dias)).toFixed(0)}</p>
+                <p className="text-base font-bold mt-1" style={{ color: COLORS.primary }}>${Math.round(totalIngresos / (registros.length / dias)).toLocaleString("es-CO")}</p>
               </div>
             ))}
           </div>

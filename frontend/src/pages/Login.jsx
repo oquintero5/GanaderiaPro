@@ -54,7 +54,7 @@ function Login({ onRegister, onLogin }) {
           min-height: 100vh;
           display: flex;
           font-family: 'DM Sans', sans-serif;
-          background: #0f1a0e;
+          background: #0b1626;
           overflow: hidden;
           position: relative;
         }
@@ -74,14 +74,14 @@ function Login({ onRegister, onLogin }) {
           position: absolute;
           inset: 0;
           background:
-            linear-gradient(160deg, rgba(15,26,14,0) 30%, rgba(15,26,14,0.85) 100%),
+            linear-gradient(160deg, rgba(11,22,38,0) 30%, rgba(11,22,38,0.85) 100%),
             url('https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=900&q=80') center/cover no-repeat;
         }
 
         .login-left-overlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(to right, rgba(15,26,14,0.1), rgba(15,26,14,0.6));
+          background: linear-gradient(to right, rgba(11,22,38,0.1), rgba(11,22,38,0.6));
         }
 
         .login-left-content {
@@ -100,7 +100,7 @@ function Login({ onRegister, onLogin }) {
         }
 
         .login-tagline span {
-          color: #fcd34d;
+          color: #93c5fd;
         }
 
         .login-sub {
@@ -134,7 +134,7 @@ function Login({ onRegister, onLogin }) {
         /* Right panel - form */
         .login-right {
           width: 480px;
-          background: #fafaf7;
+          background: #f8fafc;
           display: flex;
           flex-direction: column;
           justify-content: center;
@@ -153,20 +153,20 @@ function Login({ onRegister, onLogin }) {
         .login-logo-icon {
           width: 42px;
           height: 42px;
-          background: linear-gradient(135deg, #92400e, #b45309);
+          background: linear-gradient(135deg, #1e40af, #2563eb);
           border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 22px;
-          box-shadow: 0 4px 16px rgba(155,35,53,0.35);
+          box-shadow: 0 4px 16px rgba(30,64,175,0.35);
         }
 
         .login-logo-text {
           font-family: 'Playfair Display', serif;
           font-size: 20px;
           font-weight: 600;
-          color: #78350f;
+          color: #0b2545;
           letter-spacing: -0.3px;
         }
 
@@ -221,7 +221,7 @@ function Login({ onRegister, onLogin }) {
         .login-input {
           width: 100%;
           padding: 14px 16px;
-          border: 1.5px solid #e5e5e0;
+          border: 1.5px solid #e2e8f0;
           border-radius: 10px;
           font-size: 15px;
           font-family: 'DM Sans', sans-serif;
@@ -233,8 +233,8 @@ function Login({ onRegister, onLogin }) {
         }
 
         .login-input:focus {
-          border-color: #92400e;
-          box-shadow: 0 0 0 3px rgba(155,35,53,0.1);
+          border-color: #1e40af;
+          box-shadow: 0 0 0 3px rgba(30,64,175,0.1);
         }
 
         .login-input::placeholder {
@@ -257,12 +257,12 @@ function Login({ onRegister, onLogin }) {
           transition: color 0.2s;
         }
 
-        .toggle-pw:hover { color: #92400e; }
+        .toggle-pw:hover { color: #1e40af; }
 
         .login-btn {
           width: 100%;
           padding: 15px;
-          background: linear-gradient(135deg, #92400e, #b45309);
+          background: linear-gradient(135deg, #1e40af, #2563eb);
           color: white;
           border: none;
           border-radius: 10px;
@@ -275,12 +275,12 @@ function Login({ onRegister, onLogin }) {
           letter-spacing: 0.3px;
           position: relative;
           overflow: hidden;
-          box-shadow: 0 4px 16px rgba(155,35,53,0.35);
+          box-shadow: 0 4px 16px rgba(30,64,175,0.35);
         }
 
         .login-btn:hover:not(:disabled) {
           transform: translateY(-1px);
-          box-shadow: 0 6px 24px rgba(155,35,53,0.45);
+          box-shadow: 0 6px 24px rgba(30,64,175,0.45);
         }
 
         .login-btn:active:not(:disabled) {
@@ -322,7 +322,7 @@ function Login({ onRegister, onLogin }) {
         .login-divider-line {
           flex: 1;
           height: 1px;
-          background: #e5e5e0;
+          background: #e2e8f0;
         }
 
         .login-divider-text {
@@ -335,8 +335,8 @@ function Login({ onRegister, onLogin }) {
           width: 100%;
           padding: 14px;
           background: transparent;
-          color: #92400e;
-          border: 1.5px solid #fde68a;
+          color: #1e40af;
+          border: 1.5px solid #bfdbfe;
           border-radius: 10px;
           font-size: 14px;
           font-weight: 500;
@@ -347,14 +347,14 @@ function Login({ onRegister, onLogin }) {
         }
 
         .login-register-btn:hover {
-          background: #fffbeb;
-          border-color: #fcd34d;
+          background: #eff6ff;
+          border-color: #93c5fd;
         }
 
         .login-footer {
           margin-top: 40px;
           padding-top: 24px;
-          border-top: 1px solid #e5e5e0;
+          border-top: 1px solid #e2e8f0;
           font-size: 11px;
           color: #bbb;
           text-align: center;
@@ -366,7 +366,7 @@ function Login({ onRegister, onLogin }) {
           position: absolute;
           border-radius: 50%;
           opacity: 0.05;
-          background: #92400e;
+          background: #1e40af;
           pointer-events: none;
         }
 

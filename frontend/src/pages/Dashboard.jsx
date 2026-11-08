@@ -215,10 +215,10 @@ function Dashboard({ finca, onLogout }) {
           <div className="flex-1" />
           <div className="text-center">
             <h1 className="text-xl font-bold tracking-wide drop-shadow">🐄 {finca?.nombreFinca || "Mi Finca"}</h1>
-            <p className="text-green-200 text-xs mt-0.5 tracking-wider uppercase">AgroGanaderíaPro</p>
+            <p className="text-blue-200 text-xs mt-0.5 tracking-wider uppercase">AgroGanaderíaPro</p>
           </div>
           <div className="flex-1 flex justify-end">
-            <button onClick={onLogout} className="text-green-300 hover:text-white text-sm font-medium transition">
+            <button onClick={onLogout} className="text-blue-300 hover:text-white text-sm font-medium transition">
               Salir →
             </button>
           </div>
@@ -393,7 +393,7 @@ function Dashboard({ finca, onLogout }) {
             {NAV_ITEMS.map(({ key, label }) => (
               <button key={key} onClick={() => setVista(key)}
                 style={vista === key ? { background: GRAD, color: "white" } : {}}
-                className={`py-2 px-4 rounded-lg font-medium text-sm whitespace-nowrap transition duration-200 ${vista === key ? "shadow-sm" : "bg-white border border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700"}`}>
+                className={`py-2 px-4 rounded-lg font-medium text-sm whitespace-nowrap transition duration-200 ${vista === key ? "shadow-sm" : "bg-white border border-gray-200 text-gray-600 hover:border-blue-400 hover:text-blue-700"}`}>
                 {label}
               </button>
             ))}
@@ -401,7 +401,7 @@ function Dashboard({ finca, onLogout }) {
 
           <Suspense fallback={
             <div className="text-center py-10 text-gray-400">
-              <div className="inline-block w-7 h-7 border-4 border-gray-200 border-t-green-600 rounded-full animate-spin mb-3" />
+              <div className="inline-block w-7 h-7 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-3" />
               <p className="text-sm">Cargando...</p>
             </div>
           }>
@@ -410,7 +410,7 @@ function Dashboard({ finca, onLogout }) {
                 <div className="mb-4">
                   <input type="text" placeholder="🔍 Buscar por nombre o chapeta..."
                     value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-400 bg-white shadow-sm text-sm" />
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-400 bg-white shadow-sm text-sm" />
                 </div>
 
                 {/* STATS */}
@@ -457,7 +457,7 @@ function Dashboard({ finca, onLogout }) {
 
                 {cargandoLista ? (
                   <div className="text-center py-12 text-gray-400">
-                    <div className="inline-block w-7 h-7 border-4 border-gray-200 border-t-green-600 rounded-full animate-spin mb-3" />
+                    <div className="inline-block w-7 h-7 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-3" />
                     <p className="text-sm">Cargando animales...</p>
                   </div>
                 ) : animalesFiltrados.length === 0 ? (
@@ -471,7 +471,7 @@ function Dashboard({ finca, onLogout }) {
                     {animalesFiltrados.map((animal) => (
                       <div key={animal.id}
                         onClick={() => seleccionarAnimal(animal)}
-                        className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md hover:border-green-200 transition duration-200 cursor-pointer relative group">
+                        className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md hover:border-blue-200 transition duration-200 cursor-pointer relative group">
                         <button
                           onClick={(e) => confirmarEliminarAnimal(animal, e)}
                           className="absolute top-3 right-3 text-gray-300 hover:text-red-500 transition text-base opacity-0 group-hover:opacity-100"

@@ -4,7 +4,7 @@ import { setToastListener } from "./toast";
 const COLORS = {
   success: { bg: "#f0fdf4", border: "#86efac", icon: "✅", text: "#15803d" },
   error:   { bg: "#fef2f2", border: "#fca5a5", icon: "❌", text: "#dc2626" },
-  info:    { bg: "#fffbeb", border: "#fcd34d", icon: "💡",  text: "#92400e" },
+  info:    { bg: "#eff6ff", border: "#93c5fd", icon: "💡",  text: "#1e40af" },
 };
 
 export function ToastContainer() {

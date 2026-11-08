@@ -72,7 +72,7 @@ function Insumos({ onAgregarInsumo, finca_id }) {
 
   if (cargando) return (
     <div className="text-center py-12 text-gray-400">
-      <div className="inline-block w-7 h-7 border-4 border-gray-200 border-t-green-600 rounded-full animate-spin mb-3" />
+      <div className="inline-block w-7 h-7 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin mb-3" />
       <p className="text-sm">Cargando insumos...</p>
     </div>
   );

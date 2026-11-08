@@ -103,7 +103,7 @@ const [cargando, setCargando] = useState(false);
     setCargando(false);
   };
 
-  const inputClass = "w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-500 bg-white text-sm";
+  const inputClass = "w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-500 bg-white text-sm";
 
   return (
     <div className="min-h-screen relative flex items-center justify-center py-10"
