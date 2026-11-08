@@ -106,14 +106,15 @@ const [cargando, setCargando] = useState(false);
   const inputClass = "w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-500 bg-white text-sm";
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center py-10"
-      style={{
-        backgroundImage: "url('/platanera.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}>
-      {/* Overlay oscuro sobre la imagen */}
-      <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.38)" }} />
+    <div className="min-h-screen relative flex items-center justify-center py-10 overflow-hidden"
+      style={{ background: "linear-gradient(160deg, #0b2545 0%, #13315c 45%, #1e40af 100%)" }}>
+      {/* Fondo: degradado azul con círculos suaves (nítido en cualquier pantalla y sin descargar imágenes) */}
+      <div className="absolute rounded-full pointer-events-none"
+        style={{ width: 420, height: 420, top: -140, right: -120, background: "radial-gradient(circle, rgba(96,165,250,0.35), rgba(96,165,250,0) 70%)" }} />
+      <div className="absolute rounded-full pointer-events-none"
+        style={{ width: 360, height: 360, bottom: -120, left: -100, background: "radial-gradient(circle, rgba(147,197,253,0.25), rgba(147,197,253,0) 70%)" }} />
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
 
       <div className="relative z-10 w-full flex items-center justify-center px-4 py-10">
         <div className="bg-white bg-opacity-97 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
