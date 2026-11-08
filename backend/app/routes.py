@@ -405,3 +405,58 @@ def actualizar_obrero(obrero_id: IdRuta, datos: ObreroCreate, db: Session = Depe
     db.commit()
     db.refresh(obrero)
     return {"mensaje": "Obrero actualizado exitosamente"}
+
+# ── Eliminar registros ───────────────────────────────────────────────────────
+# Cada borrado verifica que el registro pertenezca a la finca del token.
+
+def _borrar(db: Session, registro, finca_id_token: int, mensaje: str):
+    verificar_finca(registro.finca_id, finca_id_token)
+    db.delete(registro)
+    db.commit()
+    return {"mensaje": mensaje}
+
+@router.delete("/historial/{registro_id}")
+def eliminar_historial(registro_id: IdRuta, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    registro = db.query(models.HistorialSalud).filter(models.HistorialSalud.id == registro_id).first()
+    if not registro:
+        raise HTTPException(status_code=404, detail="Registro no encontrado")
+    animal = db.query(models.Animal).filter(models.Animal.id == registro.animal_id).first()
+    if not animal:
+        raise HTTPException(status_code=404, detail="Animal no encontrado")
+    verificar_finca(animal.finca_id, token_finca_id)
+    db.delete(registro)
+    db.commit()
+    return {"mensaje": "Registro de salud eliminado"}
+
+@router.delete("/insumos/{insumo_id}")
+def eliminar_insumo(insumo_id: IdRuta, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    insumo = db.query(models.Insumo).filter(models.Insumo.id == insumo_id).first()
+    if not insumo:
+        raise HTTPException(status_code=404, detail="Insumo no encontrado")
+    return _borrar(db, insumo, token_finca_id, "Insumo eliminado")
+
+@router.delete("/finanzas/{finanza_id}")
+def eliminar_finanza(finanza_id: IdRuta, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    finanza = db.query(models.Finanza).filter(models.Finanza.id == finanza_id).first()
+    if not finanza:
+        raise HTTPException(status_code=404, detail="Registro no encontrado")
+    return _borrar(db, finanza, token_finca_id, "Registro financiero eliminado")
+
+@router.delete("/leche/{registro_id}")
+def eliminar_leche(registro_id: IdRuta, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    registro = db.query(models.RegistroLeche).filter(models.RegistroLeche.id == registro_id).first()
+    if not registro:
+        raise HTTPException(status_code=404, detail="Registro no encontrado")
+    return _borrar(db, registro, token_finca_id, "Registro de leche eliminado")
+
+@router.delete("/obreros/{obrero_id}")
+def eliminar_obrero(obrero_id: IdRuta, db: Session = Depends(get_db), token_finca_id: int = Depends(get_finca_id)):
+    obrero = db.query(models.Obrero).filter(models.Obrero.id == obrero_id).first()
+    if not obrero:
+        raise HTTPException(status_code=404, detail="Obrero no encontrado")
+    verificar_finca(obrero.finca_id, token_finca_id)
+    # Si ya estaba pagado, su gasto en Finanzas se borra con él
+    borrar_gasto_pago(db, obrero)
+    db.delete(obrero)
+    db.commit()
+    return {"mensaje": "Obrero eliminado"}

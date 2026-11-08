@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { listarFinanzas, crearFinanza, actualizarFinanza } from "../api";
+import { listarFinanzas, crearFinanza, actualizarFinanza, eliminarFinanza } from "../api";
 import { GRAD, INPUT_CLASS, COLORS } from "../shared";
 import { toast } from "../toast";
+import { ModalConfirmar } from "../ModalConfirmar";
 
 const CATEGORIAS_INGRESO = ["Venta de Animal","Venta de Leche","Venta de Cría","Otro Ingreso"];
 const CATEGORIAS_GASTO = ["Compra de Animal","Compra de Insumos","Veterinario","Alimentación","Mano de Obra","Transporte","Otro Gasto"];
@@ -14,15 +15,28 @@ function Finanzas({ finca_id }) {
   const [mostrarForm, setMostrarForm] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [formEditar, setFormEditar] = useState({});
+  const [porEliminar, setPorEliminar] = useState(null);
   const [form, setForm] = useState(FORM_INICIAL);
 
   useEffect(() => { if (finca_id) cargarFinanzas(); }, [finca_id]);
 
   const cargarFinanzas = async () => {
     setCargando(true);
-    const data = await listarFinanzas(finca_id);
-    if (Array.isArray(data)) setRegistros(data);
+    try {
+      const data = await listarFinanzas(finca_id);
+      if (Array.isArray(data)) setRegistros(data);
+    } catch (e) { toast.error(e?.message || "No se pudieron cargar los registros financieros"); }
     setCargando(false);
+  };
+
+  const ejecutarEliminar = async () => {
+    const item = porEliminar;
+    setPorEliminar(null);
+    try {
+      await eliminarFinanza(item.id);
+      setRegistros((prev) => prev.filter((x) => x.id !== item.id));
+      toast.success("Registro eliminado");
+    } catch (e) { toast.error(e?.message || "Error al eliminar"); }
   };
 
   const handleChange = useCallback((e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value })), []);
@@ -36,7 +50,7 @@ function Finanzas({ finca_id }) {
       setForm(FORM_INICIAL);
       setMostrarForm(false);
       toast.success("¡Registro agregado exitosamente!");
-    } catch { toast.error("Error al guardar el registro financiero"); }
+    } catch (e) { toast.error(e?.message || "Error al guardar el registro financiero"); }
     setGuardando(false);
   };
 
@@ -47,7 +61,7 @@ function Finanzas({ finca_id }) {
       await cargarFinanzas();
       setEditandoId(null);
       toast.success("¡Registro actualizado!");
-    } catch { toast.error("Error al actualizar el registro"); }
+    } catch (e) { toast.error(e?.message || "Error al actualizar el registro"); }
     setGuardando(false);
   };
 
@@ -66,6 +80,13 @@ function Finanzas({ finca_id }) {
 
   return (
     <div>
+      {porEliminar && (
+        <ModalConfirmar
+          mensaje={`¿Eliminar ${porEliminar.tipo === "Ingreso" ? "el ingreso" : "el gasto"} de ${porEliminar.categoria} por $${parseFloat(porEliminar.monto).toLocaleString()}? Esta acción no se puede deshacer.`}
+          onConfirmar={ejecutarEliminar}
+          onCancelar={() => setPorEliminar(null)}
+        />
+      )}
       {/* Balance cards */}
       <div className="grid grid-cols-3 gap-3 mb-5">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
@@ -164,6 +185,7 @@ function Finanzas({ finca_id }) {
                       </p>
                       <button onClick={() => { setEditandoId(registro.id); setFormEditar({ tipo: registro.tipo, categoria: registro.categoria, descripcion: registro.descripcion || "", monto: registro.monto, fecha: registro.fecha }); }}
                         className="text-xs font-medium hover:underline" style={{ color: COLORS.primaryLight }}>✏️ Editar</button>
+                      <button onClick={() => setPorEliminar(registro)} className="text-xs font-medium hover:underline text-red-600">🗑️ Eliminar</button>
                     </div>
                   </div>
                 )}

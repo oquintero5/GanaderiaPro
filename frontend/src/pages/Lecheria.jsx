@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { listarLeche, crearRegistroLeche, actualizarLeche } from "../api";
+import { listarLeche, crearRegistroLeche, actualizarLeche, eliminarLeche } from "../api";
 import { GRAD, INPUT_CLASS, COLORS } from "../shared";
 import { toast } from "../toast";
+import { ModalConfirmar } from "../ModalConfirmar";
 
 const FORM_INICIAL = { fecha: "", litros: "", precioLitro: "", frecuenciaPago: "Mensual" };
 
@@ -12,15 +13,28 @@ function Lecheria({ finca_id }) {
   const [mostrarForm, setMostrarForm] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [formEditar, setFormEditar] = useState({});
+  const [porEliminar, setPorEliminar] = useState(null);
   const [form, setForm] = useState(FORM_INICIAL);
 
   useEffect(() => { if (finca_id) cargarRegistros(); }, [finca_id]);
 
   const cargarRegistros = async () => {
     setCargando(true);
-    const data = await listarLeche(finca_id);
-    if (Array.isArray(data)) setRegistros(data);
+    try {
+      const data = await listarLeche(finca_id);
+      if (Array.isArray(data)) setRegistros(data);
+    } catch (e) { toast.error(e?.message || "No se pudieron cargar los registros de leche"); }
     setCargando(false);
+  };
+
+  const ejecutarEliminar = async () => {
+    const item = porEliminar;
+    setPorEliminar(null);
+    try {
+      await eliminarLeche(item.id);
+      setRegistros((prev) => prev.filter((x) => x.id !== item.id));
+      toast.success("Registro de leche eliminado");
+    } catch (e) { toast.error(e?.message || "Error al eliminar"); }
   };
 
   const handleChange = useCallback((e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value })), []);
@@ -34,7 +48,7 @@ function Lecheria({ finca_id }) {
       setForm(FORM_INICIAL);
       setMostrarForm(false);
       toast.success("¡Registro de leche agregado!");
-    } catch { toast.error("Error al guardar el registro"); }
+    } catch (e) { toast.error(e?.message || "Error al guardar el registro"); }
     setGuardando(false);
   };
 
@@ -45,7 +59,7 @@ function Lecheria({ finca_id }) {
       await cargarRegistros();
       setEditandoId(null);
       toast.success("¡Registro actualizado!");
-    } catch { toast.error("Error al actualizar el registro"); }
+    } catch (e) { toast.error(e?.message || "Error al actualizar el registro"); }
     setGuardando(false);
   };
 
@@ -75,6 +89,13 @@ function Lecheria({ finca_id }) {
 
   return (
     <div>
+      {porEliminar && (
+        <ModalConfirmar
+          mensaje={`¿Eliminar el registro de leche del ${porEliminar.fecha} (${porEliminar.litros} L)? Esta acción no se puede deshacer.`}
+          onConfirmar={ejecutarEliminar}
+          onCancelar={() => setPorEliminar(null)}
+        />
+      )}
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
         {[
@@ -200,6 +221,7 @@ function Lecheria({ finca_id }) {
                     <p className="text-sm font-semibold" style={{ color: COLORS.emerald }}>${(parseFloat(registro.litros) * parseFloat(registro.precio_litro)).toLocaleString()}</p>
                     <button onClick={() => { setEditandoId(registro.id); setFormEditar({ fecha: registro.fecha, litros: registro.litros, precio_litro: registro.precio_litro, frecuencia_pago: registro.frecuencia_pago }); }}
                       className="text-xs font-medium hover:underline" style={{ color: COLORS.primaryLight }}>✏️ Editar</button>
+                    <button onClick={() => setPorEliminar(registro)} className="text-xs font-medium hover:underline text-red-600">🗑️ Eliminar</button>
                   </div>
                 </div>
               )}

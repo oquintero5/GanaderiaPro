@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { listarAnimales, crearAnimal, agregarHistorial, listarHistorial, actualizarAnimal, actualizarHistorial, crearFinanza, eliminarAnimal } from "../api";
+import { listarAnimales, crearAnimal, agregarHistorial, listarHistorial, actualizarAnimal, actualizarHistorial, crearFinanza, eliminarAnimal, eliminarHistorial } from "../api";
 import { GRAD, GRAD_HOVER, INPUT_CLASS, COLORS } from "../shared";
 import { toast } from "../toast";
+import { ModalConfirmar } from "../ModalConfirmar";
 
 const Insumos  = lazy(() => import("./Insumos"));
 const Finanzas = lazy(() => import("./Finanzas"));
@@ -25,26 +26,6 @@ function BtnPrimario({ onClick, disabled, children, className = "" }) {
   );
 }
 
-function ModalConfirmar({ mensaje, onConfirmar, onCancelar }) {
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
-        <p className="text-5xl text-center mb-4">⚠️</p>
-        <p className="text-gray-700 font-medium text-center mb-6 text-sm leading-relaxed">{mensaje}</p>
-        <div className="grid grid-cols-2 gap-3">
-          <button onClick={onCancelar}
-            className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition text-sm">
-            Cancelar
-          </button>
-          <button onClick={onConfirmar}
-            className="bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition text-sm">
-            Eliminar
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 const FORM_INICIAL = { nombre: "", chapeta: "", edad: "", peso: "", sexo: "", raza: "", crias: "" };
 const SALUD_INICIAL = { fecha: "", tipo: "", producto: "", dosis: "", observaciones: "" };
@@ -74,6 +55,7 @@ function Dashboard({ finca, onLogout }) {
   const [nuevoRegistroSalud, setNuevoRegistroSalud] = useState(SALUD_INICIAL);
   const [form, setForm] = useState(FORM_INICIAL);
   const [confirmarEliminar, setConfirmarEliminar] = useState(null);
+  const [registroSaludPorEliminar, setRegistroSaludPorEliminar] = useState(null);
 
   useEffect(() => {
     if (finca?.finca_id) cargarAnimales();
@@ -81,8 +63,10 @@ function Dashboard({ finca, onLogout }) {
 
   const cargarAnimales = async () => {
     setCargandoLista(true);
-    const data = await listarAnimales(finca.finca_id);
-    if (Array.isArray(data)) setAnimales(data.map((a) => ({ ...a, historialSalud: [] })));
+    try {
+      const data = await listarAnimales(finca.finca_id);
+      if (Array.isArray(data)) setAnimales(data.map((a) => ({ ...a, historialSalud: [] })));
+    } catch (e) { toast.error(e?.message || "No se pudieron cargar los animales"); }
     setCargandoLista(false);
   };
 
@@ -107,8 +91,18 @@ function Dashboard({ finca, onLogout }) {
         setMostrarFormAnimal(false);
         toast.success("¡Animal registrado exitosamente!");
       }
-    } catch { toast.error("Error al guardar el animal"); }
+    } catch (e) { toast.error(e?.message || "Error al guardar el animal"); }
     setCargando(false);
+  };
+
+  const ejecutarEliminarRegistroSalud = async () => {
+    const registro = registroSaludPorEliminar;
+    setRegistroSaludPorEliminar(null);
+    try {
+      await eliminarHistorial(registro.id);
+      setAnimalSeleccionado((prev) => prev ? { ...prev, historialSalud: prev.historialSalud.filter((r) => r.id !== registro.id) } : prev);
+      toast.success("Registro de salud eliminado");
+    } catch (e) { toast.error(e?.message || "Error al eliminar el registro"); }
   };
 
   const confirmarEliminarAnimal = (animal, e) => { e.stopPropagation(); setConfirmarEliminar(animal); };
@@ -120,7 +114,7 @@ function Dashboard({ finca, onLogout }) {
       await eliminarAnimal(animal.id);
       setAnimales((prev) => prev.filter((a) => a.id !== animal.id));
       toast.success(`${animal.nombre} eliminado correctamente`);
-    } catch { toast.error("Error al eliminar el animal"); }
+    } catch (e) { toast.error(e?.message || "Error al eliminar el animal"); }
   };
 
   const agregarRegistroSalud = async () => {
@@ -134,7 +128,7 @@ function Dashboard({ finca, onLogout }) {
       setAnimalSeleccionado((prev) => ({ ...prev, historialSalud: Array.isArray(historial) ? historial : [] }));
       setNuevoRegistroSalud(SALUD_INICIAL);
       toast.success("¡Registro de salud agregado!");
-    } catch { toast.error("Error al guardar el registro de salud"); }
+    } catch (e) { toast.error(e?.message || "Error al guardar el registro de salud"); }
     setCargandoSalud(false);
   };
 
@@ -151,7 +145,7 @@ function Dashboard({ finca, onLogout }) {
       setAnimales((prev) => prev.map((a) => a.id === animalSeleccionado.id ? { ...a, ...formEditar } : a));
       setEditandoAnimal(false);
       toast.success("¡Animal actualizado exitosamente!");
-    } catch { toast.error("Error al actualizar el animal"); }
+    } catch (e) { toast.error(e?.message || "Error al actualizar el animal"); }
     setCargando(false);
   };
 
@@ -162,7 +156,7 @@ function Dashboard({ finca, onLogout }) {
       setAnimalSeleccionado((prev) => ({ ...prev, historialSalud: Array.isArray(historial) ? historial : [] }));
       setEditandoRegistroId(null);
       toast.success("¡Registro actualizado!");
-    } catch { toast.error("Error al actualizar el registro"); }
+    } catch (e) { toast.error(e?.message || "Error al actualizar el registro"); }
   };
 
   const agregarInsumoConFinanzas = useCallback(async (insumo) => {
@@ -173,7 +167,7 @@ function Dashboard({ finca, onLogout }) {
         monto: parseFloat(insumo.precio) * parseFloat(insumo.cantidad),
         fecha: new Date().toISOString().split("T")[0],
       });
-    } catch (e) { console.error("Error al guardar gasto en finanzas", e); }
+    } catch { toast.error("El insumo se guardó, pero no se pudo registrar el gasto en Finanzas"); }
   }, [finca]);
 
   const machos = useMemo(() => animales.filter((a) => a.sexo === "Macho").length, [animales]);
@@ -190,7 +184,9 @@ function Dashboard({ finca, onLogout }) {
       : "", [animalSeleccionado, finca]
   );
   const seleccionarAnimal = useCallback(async (animal) => {
-    const historial = await listarHistorial(animal.id);
+    let historial = [];
+    try { historial = await listarHistorial(animal.id); }
+    catch (e) { toast.error(e?.message || "No se pudo cargar el historial de salud"); }
     setAnimalSeleccionado({ ...animal, historialSalud: Array.isArray(historial) ? historial : [] });
     setFormEditar({ nombre: animal.nombre, chapeta: animal.chapeta, edad: animal.edad, peso: animal.peso, raza: animal.raza, crias: animal.crias || 0 });
     setEditandoAnimal(false);
@@ -198,6 +194,13 @@ function Dashboard({ finca, onLogout }) {
 
   return (
     <div className="min-h-screen" style={{ background: COLORS.bg }}>
+      {registroSaludPorEliminar && (
+        <ModalConfirmar
+          mensaje={`¿Eliminar el registro de ${registroSaludPorEliminar.tipo} del ${registroSaludPorEliminar.fecha}? Esta acción no se puede deshacer.`}
+          onConfirmar={ejecutarEliminarRegistroSalud}
+          onCancelar={() => setRegistroSaludPorEliminar(null)}
+        />
+      )}
       {confirmarEliminar && (
         <ModalConfirmar
           mensaje={`¿Eliminar a ${confirmarEliminar.nombre} (chapeta: ${confirmarEliminar.chapeta})? Esta acción no se puede deshacer.`}
@@ -356,6 +359,8 @@ function Dashboard({ finca, onLogout }) {
                               </div>
                               <button onClick={() => { setEditandoRegistroId(registro.id); setFormEditarRegistro({ fecha: registro.fecha, tipo: registro.tipo, producto: registro.producto, dosis: registro.dosis || "", observaciones: registro.observaciones || "" }); }}
                                 className="text-xs font-medium hover:underline" style={{ color: COLORS.primaryLight }}>✏️ Editar</button>
+                              <button onClick={() => setRegistroSaludPorEliminar(registro)}
+                                className="text-xs font-medium hover:underline text-red-600 ml-3">🗑️ Eliminar</button>
                             </div>
                             <p className="text-gray-600 text-sm mt-1">💊 {registro.producto}</p>
                             {registro.dosis && <p className="text-gray-400 text-xs mt-0.5">Dosis: {registro.dosis}</p>}

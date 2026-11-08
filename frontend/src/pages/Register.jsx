@@ -98,7 +98,7 @@ const [cargando, setCargando] = useState(false);
         setError(respuesta.detail || "Error al registrar la finca");
       }
     } catch (e) {
-      setError("Error al conectar con el servidor");
+      setError(e?.message || "Error al conectar con el servidor");
     }
     setCargando(false);
   };

@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { listarInsumos, crearInsumo, actualizarInsumo } from "../api";
+import { listarInsumos, crearInsumo, actualizarInsumo, eliminarInsumo } from "../api";
 import { GRAD, INPUT_CLASS, COLORS } from "../shared";
 import { toast } from "../toast";
+import { ModalConfirmar } from "../ModalConfirmar";
 
 const CATEGORIAS = ["Sal Mineral","Vitamina","Vacuna","Purga","Medicamento","Concentrado","Herramienta","Otro"];
 const UNIDADES = ["kg","litros","unidades","bultos","cajas"];
@@ -16,15 +17,28 @@ function Insumos({ onAgregarInsumo, finca_id }) {
   const [mostrarForm, setMostrarForm] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [formEditar, setFormEditar] = useState({});
+  const [porEliminar, setPorEliminar] = useState(null);
   const [form, setForm] = useState(FORM_INICIAL);
 
   useEffect(() => { if (finca_id) cargarInsumos(); }, [finca_id]);
 
   const cargarInsumos = async () => {
     setCargando(true);
-    const data = await listarInsumos(finca_id);
-    if (Array.isArray(data)) setInsumos(data);
+    try {
+      const data = await listarInsumos(finca_id);
+      if (Array.isArray(data)) setInsumos(data);
+    } catch (e) { toast.error(e?.message || "No se pudieron cargar los insumos"); }
     setCargando(false);
+  };
+
+  const ejecutarEliminar = async () => {
+    const item = porEliminar;
+    setPorEliminar(null);
+    try {
+      await eliminarInsumo(item.id);
+      setInsumos((prev) => prev.filter((x) => x.id !== item.id));
+      toast.success("Insumo eliminado");
+    } catch (e) { toast.error(e?.message || "Error al eliminar"); }
   };
 
   const handleChange = useCallback((e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value })), []);
@@ -39,7 +53,7 @@ function Insumos({ onAgregarInsumo, finca_id }) {
       setForm(FORM_INICIAL);
       setMostrarForm(false);
       toast.success("¡Insumo agregado exitosamente!");
-    } catch { toast.error("Error al guardar el insumo"); }
+    } catch (e) { toast.error(e?.message || "Error al guardar el insumo"); }
     setGuardando(false);
   };
 
@@ -50,7 +64,7 @@ function Insumos({ onAgregarInsumo, finca_id }) {
       await cargarInsumos();
       setEditandoId(null);
       toast.success("¡Insumo actualizado!");
-    } catch { toast.error("Error al actualizar el insumo"); }
+    } catch (e) { toast.error(e?.message || "Error al actualizar el insumo"); }
     setGuardando(false);
   };
 
@@ -65,6 +79,13 @@ function Insumos({ onAgregarInsumo, finca_id }) {
 
   return (
     <div>
+      {porEliminar && (
+        <ModalConfirmar
+          mensaje={`¿Eliminar el insumo ${porEliminar.nombre}? El gasto que ya quedó en Finanzas no se borra. Esta acción no se puede deshacer.`}
+          onConfirmar={ejecutarEliminar}
+          onCancelar={() => setPorEliminar(null)}
+        />
+      )}
       <div className="grid grid-cols-2 gap-3 mb-5">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
           <p className="text-gray-400 text-xs mb-1">Total Insumos</p>
@@ -154,6 +175,9 @@ function Insumos({ onAgregarInsumo, finca_id }) {
                   <button onClick={() => { setEditandoId(insumo.id); setFormEditar({ nombre: insumo.nombre, categoria: insumo.categoria, cantidad: insumo.cantidad, unidad: insumo.unidad, precio: insumo.precio, proveedor: insumo.proveedor || "" }); }}
                     className="mt-3 text-xs font-medium hover:underline" style={{ color: COLORS.primaryLight }}>
                     ✏️ Editar
+                  </button>
+                  <button onClick={() => setPorEliminar(insumo)} className="mt-3 ml-4 text-xs font-medium hover:underline text-red-600">
+                    🗑️ Eliminar
                   </button>
                 </>
               )}

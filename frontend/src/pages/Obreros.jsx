@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { listarObreros, crearObrero, actualizarPagoObrero, actualizarObrero } from "../api";
+import { listarObreros, crearObrero, actualizarPagoObrero, actualizarObrero, eliminarObrero } from "../api";
 import { GRAD, INPUT_CLASS, COLORS } from "../shared";
 import { toast } from "../toast";
+import { ModalConfirmar } from "../ModalConfirmar";
 
 const FORM_INICIAL = { nombre: "", dias_trabajados: "", precio_jornal: "", fecha: "", comentario: "", pagado: false };
 
@@ -12,6 +13,7 @@ function Obreros({ finca_id }) {
   const [mostrarForm, setMostrarForm] = useState(false);
   const [editandoId, setEditandoId] = useState(null);
   const [formEditar, setFormEditar] = useState({});
+  const [porEliminar, setPorEliminar] = useState(null);
   const [form, setForm] = useState(FORM_INICIAL);
 
   useEffect(() => { if (finca_id) cargarObreros(); }, [finca_id]);
@@ -21,8 +23,18 @@ function Obreros({ finca_id }) {
     try {
       const data = await listarObreros(finca_id);
       if (Array.isArray(data)) setObreros(data);
-    } catch (e) { console.error("Error cargando obreros", e); }
+    } catch (e) { toast.error(e?.message || "No se pudieron cargar los obreros"); }
     setCargando(false);
+  };
+
+  const ejecutarEliminar = async () => {
+    const item = porEliminar;
+    setPorEliminar(null);
+    try {
+      await eliminarObrero(item.id);
+      setObreros((prev) => prev.filter((x) => x.id !== item.id));
+      toast.success("Obrero eliminado");
+    } catch (e) { toast.error(e?.message || "Error al eliminar"); }
   };
 
   const handleChange = useCallback((e) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value })), []);
@@ -39,7 +51,7 @@ function Obreros({ finca_id }) {
       setForm(FORM_INICIAL);
       setMostrarForm(false);
       toast.success("¡Obrero registrado exitosamente!");
-    } catch { toast.error("Error al guardar el obrero"); }
+    } catch (e) { toast.error(e?.message || "Error al guardar el obrero"); }
     setGuardando(false);
   };
 
@@ -50,7 +62,7 @@ function Obreros({ finca_id }) {
       await cargarObreros();
       setEditandoId(null);
       toast.success("¡Obrero actualizado!");
-    } catch { toast.error("Error al actualizar el obrero"); }
+    } catch (e) { toast.error(e?.message || "Error al actualizar el obrero"); }
     setGuardando(false);
   };
 
@@ -59,7 +71,7 @@ function Obreros({ finca_id }) {
       await actualizarPagoObrero(obrero.id, { ...obrero, pagado: !obrero.pagado });
       setObreros((prev) => prev.map((o) => o.id === obrero.id ? { ...o, pagado: !o.pagado } : o));
       toast.info(obrero.pagado ? `${obrero.nombre} marcado como pendiente` : `✅ ${obrero.nombre} marcado como pagado`);
-    } catch { toast.error("Error al actualizar el pago"); }
+    } catch (e) { toast.error(e?.message || "Error al actualizar el pago"); }
   };
 
   const { totalPendiente, pagados, pendientes } = useMemo(() => ({
@@ -77,6 +89,13 @@ function Obreros({ finca_id }) {
 
   return (
     <div>
+      {porEliminar && (
+        <ModalConfirmar
+          mensaje={`¿Eliminar a ${porEliminar.nombre} (jornal del ${porEliminar.fecha})?${porEliminar.pagado ? " Su pago también se borra de Finanzas." : ""} Esta acción no se puede deshacer.`}
+          onConfirmar={ejecutarEliminar}
+          onCancelar={() => setPorEliminar(null)}
+        />
+      )}
       <div className="grid grid-cols-3 gap-3 mb-5">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 text-center">
           <p className="text-gray-400 text-xs mb-1">Pendiente</p>
@@ -169,6 +188,7 @@ function Obreros({ finca_id }) {
                     </button>
                     <button onClick={() => { setEditandoId(obrero.id); setFormEditar({ nombre: obrero.nombre, dias_trabajados: obrero.dias_trabajados, precio_jornal: obrero.precio_jornal, fecha: obrero.fecha, comentario: obrero.comentario || "" }); }}
                       className="text-xs font-medium hover:underline" style={{ color: COLORS.primaryLight }}>✏️ Editar</button>
+                    <button onClick={() => setPorEliminar(obrero)} className="text-xs font-medium hover:underline text-red-600">🗑️ Eliminar</button>
                   </div>
                 </div>
               )}

@@ -33,7 +33,7 @@ function Login({ onRegister, onLogin }) {
       }
     } catch (e) {
       clearTimeout(timeoutId);
-      setError("Error al conectar con el servidor. Intenta de nuevo.");
+      setError(e?.message || "Error al conectar con el servidor. Intenta de nuevo.");
     } finally {
       setCargando(false);
     }
