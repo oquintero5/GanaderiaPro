@@ -36,3 +36,10 @@ def _origenes_permitidos() -> list[str]:
     return origenes
 
 ALLOWED_ORIGINS = _origenes_permitidos()
+
+# Fuera de producción y sin ALLOWED_ORIGINS: además de localhost se acepta el frontend abierto
+# desde la red de la casa (p. ej. el celular entrando por http://192.168.1.20:5173) para pruebas.
+ORIGENES_RED_LOCAL = (
+    None if EN_PRODUCCION or os.environ.get("ALLOWED_ORIGINS", "").strip()
+    else r"^http://(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}):5173$"
+)

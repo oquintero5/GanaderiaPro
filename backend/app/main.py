@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 import logging
 from sqlalchemy import text
 from slowapi.errors import RateLimitExceeded
-from .config import ALLOWED_ORIGINS, MOSTRAR_DOCS
+from .config import ALLOWED_ORIGINS, MOSTRAR_DOCS, ORIGENES_RED_LOCAL
 from .database import crear_tablas, engine
 from .routes import router, limiter
 
@@ -30,6 +30,7 @@ def datos_invalidos(request: Request, exc: RequestValidationError):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=ORIGENES_RED_LOCAL,
     allow_credentials=False,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],

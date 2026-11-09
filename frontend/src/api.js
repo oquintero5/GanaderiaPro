@@ -1,7 +1,10 @@
 // En local (npm run dev) usa el backend de tu PC; en producción, el servidor publicado.
 // VITE_API_URL, si existe, tiene prioridad sobre ambos.
 const API_URL = import.meta.env.VITE_API_URL
-  || (import.meta.env.DEV ? "http://localhost:8001" : "https://ganaderiapro-backend-944496395089.us-central1.run.app");
+  || (import.meta.env.DEV
+    // En local usa el backend del mismo computador; si abres desde el celular (por la IP del PC), apunta a ese PC
+    ? `http://${window.location.hostname}:8001`
+    : "https://ganaderiapro-backend-944496395089.us-central1.run.app");
 const TIEMPO_MAXIMO_MS = 20000;
 
 let _token = null;
