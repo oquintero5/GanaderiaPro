@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Recuperar from "./pages/Recuperar";
 import Dashboard from "./pages/Dashboard";
 import { ToastContainer } from "./ToastContainer";
 import { setToken, clearToken, alExpirarSesion } from "./api";
@@ -70,10 +71,14 @@ function App() {
         <Login
           onRegister={() => setCurrentPage("register")}
           onLogin={handleLogin}
+          onOlvide={() => setCurrentPage("recuperar")}
         />
       )}
       {currentPage === "register" && (
         <Register onBack={() => setCurrentPage("login")} onLogin={handleLogin} />
+      )}
+      {currentPage === "recuperar" && (
+        <Recuperar onBack={() => setCurrentPage("login")} onLogin={handleLogin} />
       )}
       {currentPage === "dashboard" && (
         <Dashboard finca={fincaData} onLogout={handleLogout} />

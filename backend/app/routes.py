@@ -1,4 +1,8 @@
-from datetime import date, timedelta
+import hashlib
+import hmac
+import logging
+import secrets
+from datetime import date, datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, Path, Request, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -7,7 +11,8 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from . import models
 from .database import get_db
-from .auth import crear_token, get_finca_id
+from .auth import crear_token, get_finca_id, SECRET_KEY
+from .correo import correo_configurado, enviar_correo
 from pydantic import AfterValidator, BaseModel, EmailStr, Field, field_validator
 from typing import Annotated, Literal, Optional
 
@@ -77,6 +82,21 @@ class FincaCreate(BaseModel):
     @classmethod
     def clave_entre_8_y_72_bytes(cls, clave: str) -> str:
         # bcrypt solo admite hasta 72 bytes; se cuentan bytes, no caracteres
+        if not 8 <= len(clave.encode()) <= 72:
+            raise ValueError("La clave debe tener entre 8 y 72 bytes")
+        return clave
+
+class PedirCodigo(BaseModel):
+    correo: Annotated[str, Field(max_length=254), AfterValidator(texto_valido)]
+
+class Restablecer(BaseModel):
+    correo: Annotated[str, Field(max_length=254), AfterValidator(texto_valido)]
+    codigo: Annotated[str, Field(pattern=r"^[0-9]{6}$")]
+    clave_nueva: str
+
+    @field_validator("clave_nueva")
+    @classmethod
+    def clave_entre_8_y_72_bytes(cls, clave: str) -> str:
         if not 8 <= len(clave.encode()) <= 72:
             raise ValueError("La clave debe tener entre 8 y 72 bytes")
         return clave
@@ -170,6 +190,71 @@ def login_finca(request: Request, datos: FincaLogin, db: Session = Depends(get_d
 
     token = crear_token(finca.id)
     return {"mensaje": "Login exitoso", "finca_id": finca.id, "nombre": finca.nombre, "token": token}
+
+# ── Recuperar contraseña ─────────────────────────────────────────────────────
+# 1) /fincas/recuperar envía un código de 6 dígitos al correo (vence en 15 min).
+# 2) /fincas/restablecer valida el código (máx. 5 intentos) y guarda la clave nueva.
+# La respuesta de (1) es la misma exista o no el correo, para no revelar quién está registrado.
+
+log = logging.getLogger("agroganaderiapro")
+MINUTOS_CODIGO = 15
+INTENTOS_CODIGO = 5
+
+def _hash_codigo(codigo: str) -> str:
+    return hmac.new(SECRET_KEY.encode(), codigo.encode(), hashlib.sha256).hexdigest()
+
+@router.post("/fincas/recuperar")
+@limiter.limit("3/minute")
+def pedir_codigo(request: Request, datos: PedirCodigo, db: Session = Depends(get_db)):
+    if not correo_configurado():
+        raise HTTPException(status_code=503, detail="La recuperación por correo no está disponible. Escríbele al administrador para restablecer tu clave.")
+    respuesta = {"mensaje": "Si el correo está registrado, te llegará un código en unos minutos. Revisa también la carpeta de spam."}
+    finca = db.query(models.Finca).filter(models.Finca.correo == normalizar_correo(datos.correo)).first()
+    if not finca:
+        return respuesta
+    db.query(models.CodigoRecuperacion).filter(
+        models.CodigoRecuperacion.finca_id == finca.id, models.CodigoRecuperacion.usado == False  # noqa: E712
+    ).update({"usado": True})
+    codigo = f"{secrets.randbelow(1_000_000):06d}"
+    db.add(models.CodigoRecuperacion(
+        finca_id=finca.id, codigo_hash=_hash_codigo(codigo),
+        expira=datetime.utcnow() + timedelta(minutes=MINUTOS_CODIGO),
+    ))
+    db.commit()
+    try:
+        enviar_correo(
+            finca.correo,
+            f"Tu código de AgroGanaderíaPro: {codigo}",
+            f"Hola {finca.propietario},\n\n"
+            f"Tu código para restablecer la clave de la finca {finca.nombre} es: {codigo}\n\n"
+            f"Vence en {MINUTOS_CODIGO} minutos. Si no pediste este código, ignora este correo.\n\n"
+            "AgroGanaderíaPro",
+        )
+    except Exception as e:
+        log.error("No se pudo enviar el correo de recuperación: %s", e)
+        raise HTTPException(status_code=502, detail="No se pudo enviar el correo. Intenta más tarde o escríbele al administrador.")
+    return respuesta
+
+@router.post("/fincas/restablecer")
+@limiter.limit("5/minute")
+def restablecer_clave(request: Request, datos: Restablecer, db: Session = Depends(get_db)):
+    invalido = HTTPException(status_code=400, detail="Código inválido o vencido. Pide uno nuevo.")
+    finca = db.query(models.Finca).filter(models.Finca.correo == normalizar_correo(datos.correo)).first()
+    if not finca:
+        raise invalido
+    registro = db.query(models.CodigoRecuperacion).filter(
+        models.CodigoRecuperacion.finca_id == finca.id, models.CodigoRecuperacion.usado == False  # noqa: E712
+    ).order_by(models.CodigoRecuperacion.id.desc()).first()
+    if not registro or registro.expira < datetime.utcnow() or registro.intentos >= INTENTOS_CODIGO:
+        raise invalido
+    if not hmac.compare_digest(registro.codigo_hash, _hash_codigo(datos.codigo)):
+        registro.intentos += 1
+        db.commit()
+        raise invalido
+    registro.usado = True
+    finca.clave = hash_clave(datos.clave_nueva)
+    db.commit()
+    return {"mensaje": "Clave actualizada", "finca_id": finca.id, "nombre": finca.nombre, "token": crear_token(finca.id)}
 
 # ── Animales ─────────────────────────────────────────────────────────────────
 

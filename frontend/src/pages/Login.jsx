@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { loginFinca } from "../api";
 
-function Login({ onRegister, onLogin }) {
+function Login({ onRegister, onLogin, onOlvide }) {
   const [correo, setCorreo] = useState("");
   const [clave, setClave] = useState("");
   const [cargando, setCargando] = useState(false);
@@ -463,6 +463,13 @@ function Login({ onRegister, onLogin }) {
                 {showPassword ? "🙈" : "👁️"}
               </button>
             </div>
+          </div>
+
+          <div style={{ textAlign: "right", marginTop: -8, marginBottom: 16 }}>
+            <button type="button" onClick={onOlvide}
+              style={{ background: "none", border: "none", color: "#2563eb", fontSize: 13, fontWeight: 500, cursor: "pointer", padding: 0 }}>
+              ¿Olvidaste tu clave?
+            </button>
           </div>
 
           <button

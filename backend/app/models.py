@@ -87,3 +87,13 @@ class Obrero(Base):
     comentario = Column(String, default="")
     pagado = Column(Boolean, default=False)
     creado_en = Column(DateTime, default=datetime.utcnow)
+class CodigoRecuperacion(Base):
+    """Código de 6 dígitos enviado al correo para restablecer la clave (se guarda solo su hash)."""
+    __tablename__ = "codigos_recuperacion"
+    id = Column(Integer, primary_key=True, index=True)
+    finca_id = Column(Integer, ForeignKey("fincas.id"), index=True)
+    codigo_hash = Column(String, nullable=False)
+    expira = Column(DateTime, nullable=False)
+    intentos = Column(Integer, default=0)
+    usado = Column(Boolean, default=False)
+    creado_en = Column(DateTime, default=datetime.utcnow)

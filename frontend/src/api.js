@@ -68,6 +68,8 @@ const del  = (path)       => req(path, { method: "DELETE" });
 // Fincas (rutas públicas — no necesitan token)
 export const registrarFinca = (datos) => post("/fincas/registro", datos, { lanzarError: false });
 export const loginFinca     = (datos) => post("/fincas/login", datos, { lanzarError: false });
+export const pedirCodigoClave = (correo) => post("/fincas/recuperar", { correo });
+export const restablecerClave = (datos)  => post("/fincas/restablecer", datos);
 
 // Animales
 export const listarAnimales   = (finca_id)   => req(`/animales/${finca_id}`);
